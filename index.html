@@ -1,22 +1,37 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Solar System — Visualizer (Serverless Visits + Modal)</title>
+<title>Solar System — Cinematic Visualizer</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { --sidebar-w:350px; --panel: rgba(6,8,12,0.6); --muted: rgba(255,255,255,0.12); }
+  :root {
+    --sidebar-w:350px;
+    --panel: rgba(6,8,12,0.6);
+    --muted: rgba(255,255,255,0.12);
+  }
   html,body{height:100%;margin:0;font-family:"Poppins",system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#000;color:#e9f0ff;overflow:hidden}
   body{display:flex}
-  #sidebar{width:var(--sidebar-w);min-width:280px;padding:12px;background:linear-gradient(180deg, rgba(6,8,12,0.78), rgba(3,5,8,0.56));backdrop-filter:blur(6px);border-right:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:12px;transition:transform .28s cubic-bezier(.2,.9,.2,1);z-index:30}
-  #sidebar.collapsed{ transform: translateX(calc(-1 * (var(--sidebar-w) - 48px))); } /* keep small tab visible */
+  #sidebar{
+    width:var(--sidebar-w);
+    min-width:280px;
+    padding:12px;
+    background:linear-gradient(180deg, rgba(6,8,12,0.78), rgba(3,5,8,0.56));
+    backdrop-filter:blur(6px);
+    border-right:1px solid rgba(255,255,255,0.03);
+    display:flex;flex-direction:column;gap:12px;
+    transition:transform .28s cubic-bezier(.2,.9,.2,1);
+    z-index:30;
+  }
+  #sidebar.collapsed{ transform: translateX(calc(-1 * (var(--sidebar-w) - 48px))); }
   .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#ffcc33,#ff4477);display:inline-grid;place-items:center;font-weight:800;color:#081018}
   .header-row{display:flex;align-items:center;gap:12px;justify-content:space-between}
-  h1{font-size:1.05rem;margin:0} p.lead{margin:0;color:rgba(230,240,255,0.85);font-size:0.87rem}
+  h1{font-size:1.05rem;margin:0}
+  p.lead{margin:0;color:rgba(230,240,255,0.85);font-size:0.87rem}
   .controls{background:var(--panel);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-  .row{display:flex;align-items:center;gap:10px;margin:8px 0} labe
-  l{font-size:0.88rem;color:#dbe9ff}
+  .row{display:flex;align-items:center;gap:10px;margin:8px 0} label{font-size:0.88rem;color:#dbe9ff}
   input[type=range]{width:100%}
   .muted{font-size:0.82rem;color:rgba(220,230,255,0.6)}
   .btn{padding:8px 10px;border-radius:10px;border:0;background:linear-gradient(90deg,#ff8a00,#ff2d95);color:white;font-weight:600;cursor:pointer}
@@ -26,12 +41,12 @@
   canvas{position:absolute;left:0;top:0;display:block}
   #tooltip{position:absolute;pointer-events:none;padding:10px 12px;border-radius:10px;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);color:#fff;font-size:0.9rem;border:1px solid rgba(255,255,255,0.06);display:none;max-width:320px;z-index:60}
   .visits { margin-top:10px; text-align:center; }
-  .visits .rainbow { display:inline-block;padding:6px 10px;border-radius:12px;font-weight:700;background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, magenta); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .rainbow { display:inline-block;padding:6px 10px;border-radius:12px;font-weight:700;background: linear-gradient(90deg, #ff6b6b, #ffd36b, #7ef0a4, #6fd3ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .sidebar-toggle { background:transparent;border:1px solid rgba(255,255,255,0.06);color:#cfe8ff;padding:6px;border-radius:8px;cursor:pointer;}
-  .modal { position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);min-width:320px;max-width:720px;background:rgba(6,6,8,0.92);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.06);z-index:120;display:none;box-shadow:0 8px 40px rgba(0,0,0,0.8); }
+  .modal { position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);min-width:320px;max-width:760px;background:rgba(6,6,8,0.92);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.06);z-index:120;display:none;box-shadow:0 8px 40px rgba(0,0,0,0.8); }
   .modal.open{ display:block; }
   .modal .header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .modal img{max-width:220px;border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,0.6)}
+  .modal img{max-width:260px;border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,0.6)}
   .perf-note{font-size:0.82rem;color:rgba(200,210,255,0.6);margin-top:6px}
   @media(max-width:820px){ #sidebar{display:none} #canvasWrap{height:100vh} .modal{width:92%;} }
 </style>
@@ -41,7 +56,7 @@
     <div class="header-row">
       <div style="display:flex;gap:12px;align-items:center">
         <div class="logo">AR</div>
-        <div><h1>Solar System Visualizer</h1><p class="lead">Accurate, textured — by <b>A. RAKESH</b></p></div>
+        <div><h1>Solar System Visualizer</h1><p class="lead">Cinematic view — by <b>A. RAKESH</b></p></div>
       </div>
       <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
     </div>
@@ -57,7 +72,7 @@
 
       <div class="row">
         <label for="zoom">Zoom</label>
-        <input id="zoom" type="range" min="0.5" max="10" step="0.01" value="1">
+        <input id="zoom" type="range" min="0.27" max="10" step="0.01" value="1">
         <div id="zoomValue" class="muted" style="min-width:56px;text-align:right">1.00</div>
       </div>
 
@@ -79,9 +94,6 @@
         <button id="saveBtn" class="small" style="background:transparent;border:1px solid var(--muted);color:#cfe8ff;border-radius:8px">Save PNG</button>
       </div>
 
-
-
-
       <div style="margin-top:10px;font-size:0.86rem;color:rgba(220,230,255,0.7)">
         Audio:
         <div id="audioControls" style="margin-top:6px">
@@ -96,14 +108,15 @@
       </div>
     </div>
 
-    <div style="margin-top:auto;font-size:0.9rem;color:#cfe8ff;text-align:center">
-      ✨ Made with <span style="color:#ff7b7b">❤️</span> — <b>A. RAKESH</b> ✨
-    </div>
+    
 
-    <div class="visits" id="visitsBlock" aria-live="polite">
-      <div class="muted-small">👁️ Visits</div>
-      <div class="rainbow" id="visitsValue" style="font-size:1.05rem">—</div>
-    </div>
+    <div style="margin-top:auto;font-size:0.9rem;color:#cfe8ff;text-align:center">
+  ✨ Made with <span style="background: linear-gradient(90deg,#ff0077,#ffcc33,#00ffcc);
+      background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700">
+  ❤️ A. RAKESH ❤️</span> ✨<br>
+  <span class="muted">Visits: <b id="visitCount">—</b></span>
+</div>
+
   </aside>
 
   <div id="canvasWrap">
@@ -130,235 +143,221 @@
   <audio id="bgAudio" loop crossorigin="anonymous"></audio>
 
 <script>
-/* ----------------- Visualizer main (timeline removed) ----------------- */
+/*
+  Cinematic Solar System Visualizer
+  - Compact, cinematic scaling
+  - Smooth motion, no collisions
+  - Moon separation improved
+  - Performance mode + LOD
+  - Visits via /api/visits (falls back to localStorage)
+*/
 
-/* DOM references */
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const tooltip = document.getElementById("tooltip");
-const visitsEl = document.getElementById("visitsValue");
-const sidebar = document.getElementById("sidebar");
-const sidebarToggle = document.getElementById("sidebarToggle");
-const perfModeInput = document.getElementById("perfMode");
-const pauseCheckbox = document.getElementById("pause");
-const timeScaleInput = document.getElementById("timeScale");
-const scaleValue = document.getElementById("scaleValue");
-const zoomInput = document.getElementById("zoom");
-const zoomValue = document.getElementById("zoomValue");
-const showOrbitsInput = document.getElementById("showOrbits");
-const showTrailsInput = document.getElementById("showTrails");
-const showLabelsInput = document.getElementById("showLabels");
-const centerOnInput = document.getElementById("centerOn");
-const resetBtn = document.getElementById("resetBtn");
-const saveBtn = document.getElementById("saveBtn");
-const audioSelect = document.getElementById("audioSelect");
-const audioPlayBtn = document.getElementById("audioPlay");
-const audioPauseBtn = document.getElementById("audioPause");
-const bgAudio = document.getElementById("bgAudio");
-/* modal */
-const planetModal = document.getElementById("planetModal");
-const modalTitle = document.getElementById("modalTitle");
-const modalDesc = document.getElementById("modalDesc");
-const modalImg = document.getElementById("modalImg");
-const modalClose = document.getElementById("modalClose");
-const modalMore = document.getElementById("modalMore");
+/* ---------- DOM ---------- */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+const tooltip = document.getElementById('tooltip');
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebarToggle');
+const perfModeInput = document.getElementById('perfMode');
+const pauseCheckbox = document.getElementById('pause');
+const timeScaleInput = document.getElementById('timeScale');
+const scaleValue = document.getElementById('scaleValue');
+const zoomInput = document.getElementById('zoom');
+const zoomValue = document.getElementById('zoomValue');
+const showOrbitsInput = document.getElementById('showOrbits');
+const showTrailsInput = document.getElementById('showTrails');
+const showLabelsInput = document.getElementById('showLabels');
+const centerOnInput = document.getElementById('centerOn');
+const resetBtn = document.getElementById('resetBtn');
+const saveBtn = document.getElementById('saveBtn');
+const visitsEl = document.getElementById('visitsValue');
 
-/* Canvas sizing */
-let cw=0,ch=0;
-const DPR = Math.min(1.7, window.devicePixelRatio || 1);
-function resize(){
-  const sb = sidebar && !sidebar.classList.contains("collapsed") ? sidebar.getBoundingClientRect().width : 48;
-  cw = Math.max(200, Math.round(window.innerWidth - sb));
-  ch = Math.max(200, Math.round(window.innerHeight));
-  canvas.style.width = cw + "px";
-  canvas.style.height = ch + "px";
+const planetModal = document.getElementById('planetModal');
+const modalTitle = document.getElementById('modalTitle');
+const modalDesc = document.getElementById('modalDesc');
+const modalImg = document.getElementById('modalImg');
+const modalClose = document.getElementById('modalClose');
+const modalMore = document.getElementById('modalMore');
+
+const audioSelect = document.getElementById('audioSelect');
+const audioPlayBtn = document.getElementById('audioPlay');
+const audioPauseBtn = document.getElementById('audioPause');
+const bgAudio = document.getElementById('bgAudio');
+
+/* ---------- Canvas sizing ---------- */
+let cw = 0, ch = 0;
+let DPR = Math.min(1.6, window.devicePixelRatio || 1);
+function resize() {
+  const sb = sidebar && !sidebar.classList.contains('collapsed') ? sidebar.getBoundingClientRect().width : 48;
+  cw = Math.max(320, Math.round(window.innerWidth - sb));
+  ch = Math.max(240, Math.round(window.innerHeight));
+  // On low-end devices reduce DPR to save GPU
+  DPR = (window.devicePixelRatio && window.devicePixelRatio > 2.2 && navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) ? 1 : Math.min(1.6, window.devicePixelRatio || 1);
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
   canvas.width = Math.round(cw * DPR);
   canvas.height = Math.round(ch * DPR);
-  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
-window.addEventListener("resize", resize);
+window.addEventListener('resize', resize);
 resize();
 
-/* Globals */
-let running = true; // unified run/pause
-let timeScale = 1;
-let zoom = 1;
-let targetZoom = 1;
+/* ---------- Globals / state ---------- */
+let running = true;                   // paused state
+let timeScale = 1;                    // time speed multiplier
+let zoom = 1, targetZoom = 1;
 let yaw = -0.12, pitch = -0.08;
 let targetYaw = yaw, targetPitch = pitch;
-let dragging=false,lastPtr=null;
-let centerTarget = "sun";
-let centerPan = {dx:0,dy:0};
+let dragging = false, lastPtr = null;
+let centerTarget = 'sun';             // center object id
+let perfMode = false;
+let texturesLoaded = false;
 
-/* Textures */
+/* ---------- assets / textures ---------- */
+/* Put your images in assets/ (sun.jpg, mercury.jpg, etc.). Names are case-sensitive. */
 const texFiles = {
-  Sun:"sun.jpg", Mercury:"mercury.jpg", Venus:"venus.jpg",
-  Earth:"earth.jpg", Moon:"moon.jpg", Mars:"mars.jpg",
-  Jupiter:"jupiter.jpg", Saturn:"saturn.jpg",
-  Uranus:"uranus.jpg", Neptune:"neptune.jpg"
+  Sun: 'sun.jpg',
+  Mercury: 'mercury.jpg',
+  Venus: 'venus.jpg',
+  Earth: 'earth.jpg',
+  Moon: 'moon.jpg',
+  Mars: 'mars.jpg',
+  Jupiter: 'jupiter.jpg',
+  Saturn: 'saturn.jpg',
+  Uranus: 'uranus.jpg',
+  Neptune: 'neptune.jpg'
 };
 const textures = {};
-let texturesLoaded=false;
 function preloadTextures(done){
   let count = 0, total = Object.keys(texFiles).length;
-  for (let k in texFiles){
+  for (const k in texFiles){
     const img = new Image();
-    img.onload = ()=>{ textures[k]=img; if(++count===total){ texturesLoaded=true; done(); } };
-    img.onerror = ()=>{ console.warn("texture failed",k); if(++count===total){ texturesLoaded=true; done(); } };
+    img.onload = () => { textures[k] = img; if (++count === total) { texturesLoaded = true; done(); } };
+    img.onerror = () => { console.warn('texture failed', k); if (++count === total) { texturesLoaded = true; done(); } };
     img.src = texFiles[k];
   }
 }
 
-/* Descriptions and more link (planet modal) */
+/* ---------- descriptive text / links ---------- */
 const descriptions = {
-  Sun:`The Sun — nearly perfect sphere of hot plasma; energy from nuclear fusion in its core.`,
-  Mercury:`Mercury — smallest planet, cratered, large iron core, extreme temps.`,
-  Venus:`Venus — similar size to Earth, dense CO₂ atmosphere, thick clouds and greenhouse effect.`,
-  Earth:`Earth — our home with liquid water, life-supporting atmosphere, plate tectonics.`,
-  Moon:`Moon — Earth's natural satellite, formed likely from a giant impact; no global atmosphere.`,
-  Mars:`Mars — the Red Planet; evidence of past water, polar ice caps, volcanoes.`,
-  Jupiter:`Jupiter — largest planet; gas giant with many moons and strong storms.`,
-  Saturn:`Saturn — gas giant known for its rings; many moons including Titan.`,
-  Uranus:`Uranus — ice giant tilted on its side with faint rings.`,
-  Neptune:`Neptune — ice giant with strong winds and active weather.`
+  Sun: 'Sun — a nearly perfect sphere of hot plasma at the center of the solar system.',
+  Mercury: 'Mercury — small, cratered, with extreme temperature swings.',
+  Venus: 'Venus — dense CO₂ atmosphere and intense greenhouse conditions.',
+  Earth: 'Earth — our home with abundant liquid water and life.',
+  Moon: 'Moon — Earth’s natural satellite; cratered and airless.',
+  Mars: 'Mars — the Red Planet; evidence of past water and large volcanoes.',
+  Jupiter: 'Jupiter — gas giant with strong storms and many moons.',
+  Saturn: 'Saturn — gas giant with spectacular rings.',
+  Uranus: 'Uranus — ice giant with extreme axial tilt and faint rings.',
+  Neptune: 'Neptune — ice giant with strong winds and active weather.'
 };
 const moreLinks = {
-  Mercury:"https://solarsystem.nasa.gov/planets/mercury/overview/",
-  Venus:"https://solarsystem.nasa.gov/planets/venus/overview/",
-  Earth:"https://solarsystem.nasa.gov/planets/earth/overview/",
-  Moon:"https://solarsystem.nasa.gov/moons/earths-moon/overview/",
-  Mars:"https://solarsystem.nasa.gov/planets/mars/overview/",
-  Jupiter:"https://solarsystem.nasa.gov/planets/jupiter/overview/",
-  Saturn:"https://solarsystem.nasa.gov/planets/saturn/overview/",
-  Uranus:"https://solarsystem.nasa.gov/planets/uranus/overview/",
-  Neptune:"https://solarsystem.nasa.gov/planets/neptune/overview/",
-  Sun:"https://solarsystem.nasa.gov/solar-system/sun/overview/"
+  Sun: 'https://solarsystem.nasa.gov/solar-system/sun/overview/',
+  Mercury: 'https://solarsystem.nasa.gov/planets/mercury/overview/',
+  Venus: 'https://solarsystem.nasa.gov/planets/venus/overview/',
+  Earth: 'https://solarsystem.nasa.gov/planets/earth/overview/',
+  Moon: 'https://solarsystem.nasa.gov/moons/earths-moon/overview/',
+  Mars: 'https://solarsystem.nasa.gov/planets/mars/overview/',
+  Jupiter: 'https://solarsystem.nasa.gov/planets/jupiter/overview/',
+  Saturn: 'https://solarsystem.nasa.gov/planets/saturn/overview/',
+  Uranus: 'https://solarsystem.nasa.gov/planets/uranus/overview/',
+  Neptune: 'https://solarsystem.nasa.gov/planets/neptune/overview/'
 };
 
-/* Planets: distances increased to avoid collisions */
+/* ---------- cinematic planet setup ---------- */
+/* Distances (AU) tuned for cinematic compact look (no collision) */
 const planets = [
-  {name:"Sun", id:"sun", distAU:0, size:28, color:"#ffcc66", speed:0, texture:"Sun"},
-  {name:"Mercury", id:"mercury", distAU:0.65, size:4.2, color:"#aaa", speed:4.1, texture:"Mercury"},
-  {name:"Venus", id:"venus", distAU:1.25, size:6.2, color:"#f1c40f", speed:1.6, texture:"Venus"},
-  {name:"Earth", id:"earth", distAU:2.0, size:7, color:"#3fa9ff", speed:1, texture:"Earth"},
-  {name:"Mars", id:"mars", distAU:3.6, size:5.4, color:"#ff6b3d", speed:0.5, texture:"Mars"},
-  {name:"Jupiter", id:"jupiter", distAU:8.5, size:16, color:"#d8cba8", speed:0.08, texture:"Jupiter"},
-  {name:"Saturn", id:"saturn", distAU:12.8, size:13, color:"#f5d7a3", speed:0.03, texture:"Saturn"},
-  {name:"Uranus", id:"uranus", distAU:20.5, size:9.5, color:"#8cf0e0", speed:0.012, texture:"Uranus"},
-  {name:"Neptune", id:"neptune", distAU:25.6, size:9.5, color:"#547aff", speed:0.006, texture:"Neptune"}
+  { name: 'Sun', id: 'sun', distAU: 0, size: 20, color: '#ffcc66', speed: 0, texture: 'Sun' },
+  { name: 'Mercury', id: 'mercury', distAU: 0.9, size: 4.6, color: '#cfcfcf', speed: 4.2, texture: 'Mercury' },
+  { name: 'Venus', id: 'venus', distAU: 1.6, size: 6.8, color: '#f1c40f', speed: 1.6, texture: 'Venus' },
+  { name: 'Earth', id: 'earth', distAU: 2.6, size: 8.0, color: '#3fa9ff', speed: 1.0, texture: 'Earth' },
+  { name: 'Mars', id: 'mars', distAU: 3.8, size: 5.6, color: '#ff6b3d', speed: 0.5, texture: 'Mars' },
+  { name: 'Jupiter', id: 'jupiter', distAU: 7.0, size: 9, color: '#d8cba8', speed: 0.08, texture: 'Jupiter' },
+  { name: 'Saturn', id: 'saturn', distAU: 10.8, size: 14, color: '#f5d7a3', speed: 0.03, texture: 'Saturn' },
+  { name: 'Uranus', id: 'uranus', distAU: 16.5, size: 10.4, color: '#8cf0e0', speed: 0.012, texture: 'Uranus' },
+  { name: 'Neptune', id: 'neptune', distAU: 20.5, size: 10.4, color: '#547aff', speed: 0.006, texture: 'Neptune' }
 ];
-planets.forEach(p=>p.angle=Math.random()*Math.PI*2);
+planets.forEach(p => p.angle = Math.random() * Math.PI * 2);
 
-const moon = { name:"Moon", id:"moon", parent:"earth", distAU:0.00384, size:2.2, speed:3.5, texture:"Moon", angle:Math.random()*Math.PI*2 };
+/* moon: increased cinematic separation from Earth */
+const moon = { name: 'Moon', id: 'moon', parent: 'earth', distAU: 0.35, size: 2.6, speed: 3.6, texture: 'Moon', angle: Math.random() * Math.PI * 2 };
 
-const trails = {}; [...planets, moon].forEach(p=>trails[p.id]=[]);
-const MAX_TRAIL = 120;
+/* trails */
+const trails = {};
+[...planets, moon].forEach(p => trails[p.id] = []);
+const MAX_TRAIL = 100;
 const GLOBAL_SPEED = 0.28;
 
-/* Performance flags */
-let perfMode = false;
-
-/* Audio */
-bgAudio.volume = 0.28;
-audioPlayBtn.onclick = ()=>{ if (!bgAudio.src) bgAudio.src = audioSelect.value; bgAudio.play().catch(()=>{}); };
-audioPauseBtn.onclick = ()=>{ bgAudio.pause(); };
-audioSelect.onchange = ()=>{ bgAudio.src = audioSelect.value; };
-
-/* Interaction & pointer */
-canvas.style.cursor = "grab";
-canvas.addEventListener("pointerdown", e=>{ dragging=true; lastPtr={x:e.clientX,y:e.clientY}; canvas.setPointerCapture(e.pointerId); canvas.style.cursor="grabbing"; });
-canvas.addEventListener("pointermove", e=>{
-  if (dragging && lastPtr){
-    const dx = e.clientX - lastPtr.x, dy = e.clientY - lastPtr.y;
-    targetYaw += dx * 0.006; targetPitch += dy * 0.006;
-    targetPitch = Math.max(-Math.PI/2+0.1, Math.min(Math.PI/2-0.1, targetPitch));
-    lastPtr = {x:e.clientX,y:e.clientY};
-  }
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  // hover / tooltip is handled separately per-frame using lastFrameObjects; but we also call handleHover to update it quickly
-  handleHover(mx,my);
-});
-window.addEventListener("pointerup", e=>{ dragging=false; lastPtr=null; canvas.style.cursor="grab"; });
-canvas.addEventListener("wheel", e=>{ e.preventDefault(); targetZoom *= (1 - e.deltaY * 0.0012); targetZoom = Math.min(10, Math.max(0.5, targetZoom)); zoomInput.value = targetZoom; zoomValue.textContent = targetZoom.toFixed(2); },{passive:false});
-window.addEventListener("keydown", e=>{ if (e.code==="Space"){ running=!running; pauseCheckbox.checked=!running; } if (e.key==='h' || e.key==='H'){ sidebar.classList.toggle('collapsed'); resize(); } });
-
-/* Inputs */
-timeScaleInput.oninput = ()=>{ timeScale = parseFloat(timeScaleInput.value); scaleValue.textContent = timeScale.toFixed(2)+"x"; };
-zoomInput.oninput = ()=>{ targetZoom = parseFloat(zoomInput.value); zoomValue.textContent = targetZoom.toFixed(2); };
-resetBtn.onclick = ()=>{ targetZoom=1; zoomInput.value=1; targetYaw=-0.12; targetPitch=-0.08; trails && Object.keys(trails).forEach(k=>trails[k]=[]); centerTarget='sun'; centerOnInput.value='sun'; running=true; pauseCheckbox.checked=false; };
-centerOnInput.onchange = ()=>{ centerTarget = centerOnInput.value.toLowerCase(); };
-perfModeInput.onchange = ()=>{ perfMode = perfModeInput.checked; };
-
-/* sidebar toggle fix */
-sidebarToggle.addEventListener("click", ()=>{ sidebar.classList.toggle("collapsed"); resize(); sidebarToggle.textContent = sidebar.classList.contains("collapsed") ? "❯" : "☰"; });
-
-/* Modal handlers */
-modalClose.onclick = ()=>{ planetModal.classList.remove('open'); planetModal.setAttribute('aria-hidden','true'); };
-modalMore.onclick = ()=>{ const id = modalTitle.dataset.id; if (moreLinks[id]) window.open(moreLinks[id], "_blank"); };
-planetModal.addEventListener("click", e=>{ if (e.target === planetModal) { planetModal.classList.remove('open'); planetModal.setAttribute('aria-hidden','true'); } });
-
-/* Helper math / projection */
-function auToWorld(au){
-  const base = Math.min(cw,ch) * 0.16;
-  return Math.sign(au) * Math.pow(Math.abs(au) + 0.2, 0.95) * base * zoom;
+/* ---------- utility math & projection ---------- */
+function auToWorld(au) {
+  // cinematic non-linear mapping:
+  // compress inner/outer ranges to keep everything visible while preserving sense of distance.
+  const base = Math.min(cw, ch) * 0.7;
+  // add slight offset and soft-power to compress extremes
+  return Math.sign(au) * Math.pow(Math.abs(au) + 0.15, 0.95) * base * zoom;
 }
-function rotateY(x,y,z,a){ const ca=Math.cos(a),sa=Math.sin(a); return {x:x*ca+z*sa,y:y,z:-x*sa+z*ca}; }
-function rotateX(x,y,z,a){ const ca=Math.cos(a),sa=Math.sin(a); return {x:x,y:y*ca-z*sa,z:y*sa+z*ca}; }
-function project(p, camZ, f){ const z = p.z + camZ; if ((f + z) === 0) return null; const s = f/(f+z); return {x: p.x*s, y: p.y*s, s, depth:z}; }
+function rotateY(x, y, z, a) { const ca = Math.cos(a), sa = Math.sin(a); return { x: x * ca + z * sa, y: y, z: -x * sa + z * ca }; }
+function rotateX(x, y, z, a) { const ca = Math.cos(a), sa = Math.sin(a); return { x: x, y: y * ca - z * sa, z: y * sa + z * ca }; }
+function project(p, camZ, f) { const z = p.z + camZ; if ((f + z) === 0) return null; const s = f / (f + z); return { x: p.x * s, y: p.y * s, s, depth: z }; }
 
-/* Sun glow */
-function drawSunGlow(x,y,radius){
-  const g = ctx.createRadialGradient(x,y,radius*0.15,x,y,radius*4.5);
-  g.addColorStop(0,"rgba(255,245,200,0.95)"); g.addColorStop(0.18,"rgba(255,210,120,0.5)"); g.addColorStop(0.45,"rgba(255,150,60,0.15)"); g.addColorStop(1,"rgba(255,100,30,0)");
-  ctx.save(); ctx.globalCompositeOperation="lighter"; ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,radius*4.5,0,Math.PI*2); ctx.fill(); ctx.restore();
-}
-
-/* Stroke orbit (respects perfMode) */
-function strokeOrbit(points){
-  if (points.length<2) return;
+/* ---------- drawing helpers ---------- */
+function drawSunGlow(x, y, radius) {
+  const g = ctx.createRadialGradient(x, y, radius * 0.2, x, y, radius * 4.0);
+  g.addColorStop(0, "rgba(255,245,200,0.98)");
+  g.addColorStop(0.18, "rgba(255,210,120,0.5)");
+  g.addColorStop(0.45, "rgba(255,150,60,0.14)");
+  g.addColorStop(1, "rgba(255,100,30,0)");
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.setLineDash([8,5]);
-  ctx.strokeStyle = perfMode ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.28)";
-  ctx.lineWidth = perfMode ? 0.9 : 1.2;
-  let started=false;
-  for (let i=0;i<points.length;i++){
-    const a = points[i];
-    if (!isFinite(a.x) || !isFinite(a.y)){ started=false; continue; }
-    if (!started){ ctx.moveTo(a.x,a.y); started=true; } else ctx.lineTo(a.x,a.y);
+  ctx.arc(x, y, radius * 4.0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function strokeOrbit(points, dashed = true) {
+  if (!points.length) return;
+  ctx.beginPath();
+  if (dashed) ctx.setLineDash([8, 6]);
+  ctx.lineWidth = perfMode ? 0.9 : 1.25;
+  ctx.strokeStyle = perfMode ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.30)";
+  let started = false;
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    if (!isFinite(p.x) || !isFinite(p.y)) { started = false; continue; }
+    if (!started) { ctx.moveTo(p.x, p.y); started = true; } else ctx.lineTo(p.x, p.y);
   }
-  try{ ctx.closePath(); }catch(e){}
+  try { ctx.closePath(); } catch (e) {}
   ctx.stroke();
   ctx.setLineDash([]);
 }
 
-/* Hover / modal hit-testing */
-let lastFrameObjects = null;
+/* ---------- hover + modal ---------- */
+let lastFrameObjects = [];
 let lastHover = null;
 
-function handleHover(mx,my){
+function handleHover(mx, my) {
   if (!lastFrameObjects) return;
   let best = null;
-  for (const obj of lastFrameObjects){
+  for (const obj of lastFrameObjects) {
     const dx = obj.screenX - mx, dy = obj.screenY - my;
-    const d = Math.hypot(dx,dy);
-    if (d <= Math.max(6, obj.radius + 6)){
-      if (!best || d < best.d) best = {obj, d};
+    const d = Math.hypot(dx, dy);
+    if (d <= Math.max(6, obj.radius + 6)) {
+      if (!best || d < best.d) best = { obj, d };
     }
   }
-  if (best){
+  if (best) {
     const id = best.obj.id;
-    // tooltip
-    if (lastHover !== id){
+    if (lastHover !== id) {
       lastHover = id;
-      tooltip.innerHTML = `<strong style="display:block;margin-bottom:6px">${best.obj.name}</strong><div style="opacity:0.95">${descriptions[best.obj.name]||''}</div>`;
+      tooltip.innerHTML = `<strong style="display:block;margin-bottom:6px">${best.obj.name}</strong><div style="opacity:0.95">${descriptions[best.obj.name] || ''}</div>`;
       tooltip.style.display = "block";
     }
-    // position tooltip near object
     let left = best.obj.screenX + 16;
     let top = best.obj.screenY - 8;
-    left = Math.min(Math.max(8,left), cw-320);
-    top = Math.min(Math.max(8,top), ch-80);
+    left = Math.min(Math.max(8, left), cw - 320);
+    top = Math.min(Math.max(8, top), ch - 80);
     tooltip.style.transform = `translate(${left}px, ${top}px)`;
   } else {
     lastHover = null;
@@ -366,205 +365,313 @@ function handleHover(mx,my){
   }
 }
 
-/* Click -> modal */
-canvas.addEventListener("click", e=>{
+/* click -> modal */
+canvas.addEventListener('click', e => {
   if (!lastFrameObjects) return;
   const rect = canvas.getBoundingClientRect();
   const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  for (const obj of lastFrameObjects){
+  for (const obj of lastFrameObjects) {
     const dx = obj.screenX - mx, dy = obj.screenY - my;
-    if (Math.hypot(dx,dy) <= obj.radius + 6){
-      // open modal
+    if (Math.hypot(dx, dy) <= obj.radius + 6) {
       modalTitle.textContent = obj.name;
       modalTitle.dataset.id = obj.id;
-      modalDesc.textContent = descriptions[obj.name] || "";
+      modalDesc.textContent = descriptions[obj.name] || '';
       const tex = textures[obj.name] || textures[obj.texture] || null;
-      modalImg.src = tex ? tex.src : `assets/${obj.id}.jpg`;
-      planetModal.classList.add('open'); planetModal.setAttribute('aria-hidden','false');
+      modalImg.src = tex ? tex.src : (`${obj.id}.jpg`);
+      planetModal.classList.add('open'); planetModal.setAttribute('aria-hidden', 'false');
       return;
     }
   }
 });
 
-/* Simulation / draw */
+/* ---------- pointer & input ---------- */
+canvas.style.cursor = 'grab';
+canvas.addEventListener('pointerdown', e => {
+  dragging = true;
+  lastPtr = { x: e.clientX, y: e.clientY };
+  canvas.setPointerCapture(e.pointerId);
+  canvas.style.cursor = 'grabbing';
+});
+canvas.addEventListener('pointermove', e => {
+  if (dragging && lastPtr) {
+    const dx = e.clientX - lastPtr.x, dy = e.clientY - lastPtr.y;
+    // direct update to target (immediate feel) while smoothing applied in draw()
+    targetYaw += dx * 0.006;
+    targetPitch += dy * 0.006;
+    targetPitch = Math.max(-Math.PI / 2 + 0.12, Math.min(Math.PI / 2 - 0.12, targetPitch));
+    lastPtr = { x: e.clientX, y: e.clientY };
+  }
+  const rect = canvas.getBoundingClientRect();
+  handleHover(e.clientX - rect.left, e.clientY - rect.top);
+});
+window.addEventListener('pointerup', e => { dragging = false; lastPtr = null; canvas.style.cursor = 'grab'; });
+window.addEventListener('pointercancel', e => { dragging = false; lastPtr = null; canvas.style.cursor = 'grab'; });
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  targetZoom *= (1 - e.deltaY * 0.0012);
+  targetZoom = Math.min(10, Math.max(0.5, targetZoom));
+  zoomInput.value = targetZoom;
+  zoomValue.textContent = targetZoom.toFixed(2);
+}, { passive: false });
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    running = !running;
+    pauseCheckbox.checked = !running;
+  }
+  if (e.key === 'h' || e.key === 'H') {
+    sidebar.classList.toggle('collapsed');
+    resize();
+  }
+});
+
+/* UI handlers */
+timeScaleInput.oninput = () => { timeScale = parseFloat(timeScaleInput.value); scaleValue.textContent = timeScale.toFixed(2) + 'x'; };
+zoomInput.oninput = () => { targetZoom = parseFloat(zoomInput.value); zoomValue.textContent = targetZoom.toFixed(2); };
+resetBtn.onclick = () => {
+  running = true; pauseCheckbox.checked = false;
+  targetZoom = 1; zoomInput.value = 1;
+  targetYaw = -0.12; targetPitch = -0.08;
+  trails && Object.keys(trails).forEach(k => trails[k] = []);
+  centerTarget = 'sun'; centerOnInput.value = 'sun';
+  sidebar.classList.remove('collapsed'); resize();
+};
+centerOnInput.onchange = () => { centerTarget = centerOnInput.value.toLowerCase(); };
+perfModeInput.onchange = () => { perfMode = perfModeInput.checked; };
+
+/* sidebar toggle */
+sidebarToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
+  sidebarToggle.textContent = sidebar.classList.contains('collapsed') ? '❯' : '☰';
+  resize();
+});
+
+/* modal */
+modalClose.addEventListener('click', () => { planetModal.classList.remove('open'); planetModal.setAttribute('aria-hidden', 'true'); });
+modalMore.addEventListener('click', () => { const id = modalTitle.dataset.id; if (moreLinks[id]) window.open(moreLinks[id], '_blank'); });
+planetModal.addEventListener('click', e => { if (e.target === planetModal) { planetModal.classList.remove('open'); planetModal.setAttribute('aria-hidden', 'true'); } });
+
+/* audio */
+bgAudio.volume = 0.28;
+audioPlayBtn.onclick = () => { if (!bgAudio.src) bgAudio.src = audioSelect.value; bgAudio.play().catch(() => {}); };
+audioPauseBtn.onclick = () => { bgAudio.pause(); };
+audioSelect.onchange = () => { bgAudio.src = audioSelect.value; };
+
+/* ---------- visits (serverless) ---------- */
+async function fetchVisits() {
+  try {
+    const res = await fetch('/api/visits');
+    if (res.ok) {
+      const j = await res.json();
+      if (j && typeof j.value !== 'undefined') { visitsEl.textContent = Number(j.value).toLocaleString(); return; }
+    }
+  } catch (e) { /* ignore */ }
+  // fallback local counter
+  try {
+    const key = 'visits_fallback_v1';
+    let v = parseInt(localStorage.getItem(key) || '0', 10) || 0;
+    v++; localStorage.setItem(key, v);
+    visitsEl.textContent = v.toLocaleString() + ' (local)';
+  } catch (e) {}
+}
+fetchVisits();
+
+/* ---------- main animation (smooth & stable) ---------- */
 let last = performance.now();
-function draw(now){
-  const dt = Math.min(0.05, (now - last)/1000);
+
+function draw(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
 
-  yaw += (targetYaw - yaw) * 0.12; pitch += (targetPitch - pitch) * 0.12;
+  // smooth interpolation for camera controls
+  const smooth = 0.12;
+  yaw += (targetYaw - yaw) * smooth;
+  pitch += (targetPitch - pitch) * smooth;
   zoom += (targetZoom - zoom) * 0.18;
 
-  // when not running (paused), planets and simulation stop
-  if (running){
+  // update planets if running
+  if (running) {
     planets.forEach(p => p.angle += p.speed * GLOBAL_SPEED * timeScale * dt);
     moon.angle += moon.speed * GLOBAL_SPEED * timeScale * dt;
   }
 
-  ctx.clearRect(0,0,cw,ch);
-  const cx = cw/2, cy = ch/2;
+  // clear
+  ctx.clearRect(0, 0, cw, ch);
+
+  const cx = cw * 0.5, cy = ch * 0.5;
   const focal = 1000, camZ = 2000;
 
-  function worldPosOf(id){
-    if (id === "moon"){
-      const earth = planets.find(pp=>pp.id==='earth');
+  // compute center pan (so centerTarget appears in center)
+  function worldPosOf(id) {
+    if (id === 'moon') {
+      const earth = planets.find(pp => pp.id === 'earth');
       const ex = earth.distAU * Math.cos(earth.angle), ey = earth.distAU * Math.sin(earth.angle);
-      return {x: ex + moon.distAU * Math.cos(moon.angle), y: ey + moon.distAU * Math.sin(moon.angle), z:0, name:"Moon", id:"moon"};
+      return { x: ex + moon.distAU * Math.cos(moon.angle), y: ey + moon.distAU * Math.sin(moon.angle), z: 0, name: 'Moon', id: 'moon' };
     } else {
-      const p = planets.find(pp=>pp.id===id);
-      if (!p) return {x:0,y:0,z:0};
-      return {x: p.distAU * Math.cos(p.angle), y: p.distAU * Math.sin(p.angle), z:0, name:p.name, id:p.id};
+      const p = planets.find(pp => pp.id === id);
+      if (!p) return { x: 0, y: 0, z: 0 };
+      return { x: p.distAU * Math.cos(p.angle), y: p.distAU * Math.sin(p.angle), z: 0, name: p.name, id: p.id };
     }
   }
-
-  // center pan
   const tw = worldPosOf(centerTarget);
   const centered = rotateY(auToWorld(tw.x), auToWorld(tw.y), 0, yaw);
   const centered2 = rotateX(centered.x, centered.y, centered.z, pitch);
   const pcent = project(centered2, camZ, focal);
-  if (pcent && isFinite(pcent.x) && isFinite(pcent.y)){ centerPan.dx = (cx + pcent.x) - cx; centerPan.dy = (cy + pcent.y) - cy; } else { centerPan.dx=0; centerPan.dy=0; }
+  let centerPanX = 0, centerPanY = 0;
+  if (pcent && isFinite(pcent.x) && isFinite(pcent.y)) {
+    centerPanX = (cx + pcent.x) - cx;
+    centerPanY = (cy + pcent.y) - cy;
+  }
 
-  // orbits
-  if (showOrbitsInput.checked){
-    const steps = perfMode? 72 : 140;
-    for (const p of planets){
+  // draw orbits
+  if (showOrbitsInput.checked) {
+    const steps = perfMode ? 64 : 160;
+    for (const p of planets) {
       if (p.id === 'sun') continue;
-      const pts=[];
-      for (let i=0;i<steps;i++){
-        const a=(i/steps)*Math.PI*2;
-        const rx = auToWorld(p.distAU)*Math.cos(a), ry = auToWorld(p.distAU)*Math.sin(a);
-        let r3 = rotateY(rx,ry,0,yaw); r3=rotateX(r3.x,r3.y,r3.z,pitch);
+      const pts = new Array(steps);
+      for (let i = 0; i < steps; i++) {
+        const a = (i / steps) * Math.PI * 2;
+        const rx = auToWorld(p.distAU) * Math.cos(a), ry = auToWorld(p.distAU) * Math.sin(a);
+        let r3 = rotateY(rx, ry, 0, yaw); r3 = rotateX(r3.x, r3.y, r3.z, pitch);
         const pr = project(r3, camZ, focal);
-        if (!pr) pts.push({x:NaN,y:NaN}); else pts.push({x: cx + pr.x - centerPan.dx, y: cy + pr.y - centerPan.dy});
+        pts[i] = pr ? { x: cx + pr.x - centerPanX, y: cy + pr.y - centerPanY } : { x: NaN, y: NaN };
       }
       strokeOrbit(pts);
     }
   }
 
-  // build items
-  const items=[];
-  for (const p of planets){
-    const r = p.distAU; const x = r*Math.cos(p.angle), y = r*Math.sin(p.angle);
-    let r1 = rotateY(auToWorld(x), auToWorld(y), 0, yaw); r1 = rotateX(r1.x,r1.y,r1.z,pitch);
+  // build draw list
+  const items = [];
+  for (const p of planets) {
+    const r = p.distAU;
+    const x = r * Math.cos(p.angle), y = r * Math.sin(p.angle);
+    let r1 = rotateY(auToWorld(x), auToWorld(y), 0, yaw);
+    r1 = rotateX(r1.x, r1.y, r1.z, pitch);
     const pr = project(r1, camZ, focal);
     if (!pr) continue;
-    const sx = cx + pr.x - centerPan.dx, sy = cy + pr.y - centerPan.dy;
-    items.push({p, screenX:sx, screenY:sy, scale:pr.s, depth:pr.depth});
+    const sx = cx + pr.x - centerPanX, sy = cy + pr.y - centerPanY;
+    items.push({ p, screenX: sx, screenY: sy, scale: pr.s, depth: pr.depth });
   }
 
-  // moon pos
-  const earth = planets.find(p=>p.id==='earth');
-  const moonPos = {x: earth.distAU * Math.cos(earth.angle) + moon.distAU * Math.cos(moon.angle), y: earth.distAU * Math.sin(earth.angle) + moon.distAU * Math.sin(moon.angle)};
-  let r2 = rotateY(auToWorld(moonPos.x), auToWorld(moonPos.y), 0, yaw); r2 = rotateX(r2.x,r2.y,r2.z,pitch);
+  // moon position
+  const earth = planets.find(p => p.id === 'earth');
+  const moonWorld = { x: earth.distAU * Math.cos(earth.angle) + moon.distAU * Math.cos(moon.angle), y: earth.distAU * Math.sin(earth.angle) + moon.distAU * Math.sin(moon.angle) };
+  let r2 = rotateY(auToWorld(moonWorld.x), auToWorld(moonWorld.y), 0, yaw); r2 = rotateX(r2.x, r2.y, r2.z, pitch);
   const prM = project(r2, camZ, focal);
 
-  // sun draw + glow
+  // draw Sun first with glow
   const sunRot = rotateY(auToWorld(0), auToWorld(0), 0, yaw);
-  const psun = project(rotateX(sunRot.x,sunRot.y,sunRot.z,pitch), camZ, focal);
-  if (psun){
-    const sx = cx + psun.x - centerPan.dx, sy = cy + psun.y - centerPan.dy;
-    drawSunGlow(sx, sy, 70*(1 + (zoom-1)*0.4));
-    ctx.save(); const ssize = planets.find(p=>p.id==='sun').size * 2 * (1 + (zoom-1)*0.4);
-    ctx.beginPath(); ctx.arc(sx,sy,ssize,0,Math.PI*2); ctx.closePath(); ctx.clip();
-    if (!perfMode && textures.Sun) ctx.drawImage(textures.Sun, sx-ssize, sy-ssize, ssize*2, ssize*2); else { ctx.fillStyle="#ffcc66"; ctx.fill(); }
+  const psun = project(rotateX(sunRot.x, sunRot.y, sunRot.z, pitch), camZ, focal);
+  if (psun) {
+    const sunScreenX = cx + psun.x - centerPanX, sunScreenY = cy + psun.y - centerPanY;
+    drawSunGlow(sunScreenX, sunScreenY, 80 * (1 + (zoom - 1) * 0.4));
+    ctx.save();
+    const ssize = planets.find(p => p.id === 'sun').size * 2 * (1 + (zoom - 1) * 0.4);
+    ctx.beginPath(); ctx.arc(sunScreenX, sunScreenY, ssize, 0, Math.PI * 2); ctx.closePath();
+    ctx.clip();
+    if (!perfMode && textures.Sun) ctx.drawImage(textures.Sun, sunScreenX - ssize, sunScreenY - ssize, ssize * 2, ssize * 2);
+    else { ctx.fillStyle = '#ffcc66'; ctx.fill(); }
     ctx.restore();
   }
 
-  // draw items sorted by depth
-  items.sort((a,b)=>a.depth - b.depth);
+  // draw planets sorted by depth (back to front)
+  items.sort((a, b) => a.depth - b.depth);
   lastFrameObjects = [];
-  for (const it of items){
+  for (const it of items) {
     const p = it.p;
-    if (p.id==='sun') continue;
-    const size = Math.max(2, p.size * 2 * it.scale);
-    ctx.save(); ctx.beginPath(); ctx.arc(it.screenX,it.screenY,size,0,Math.PI*2); ctx.closePath(); ctx.clip();
-    if (!perfMode && textures[p.texture]) ctx.drawImage(textures[p.texture], it.screenX-size, it.screenY-size, size*2, size*2);
-    else { ctx.fillStyle = p.color; ctx.fill(); }
+    if (p.id === 'sun') continue;
+    // ensure minimum visible size
+      const baseSize = p.size * 2;
+      const size = p.id === "sun" ? baseSize * 1.2 : baseSize; // sun slightly larger
+
+    ctx.save();
+    ctx.beginPath(); ctx.arc(it.screenX, it.screenY, size, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+    if (!perfMode && textures[p.texture]) {
+      try { ctx.drawImage(textures[p.texture], it.screenX - size, it.screenY - size, size * 2, size * 2); } catch (e) { ctx.fillStyle = p.color; ctx.fill(); }
+    } else { ctx.fillStyle = p.color; ctx.fill(); }
     ctx.restore();
 
-    if (showLabelsInput.checked){
-      ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.font = Math.max(10, 11*(1 + it.scale*0.12))+"px Poppins";
-      ctx.fillText(p.name, it.screenX + size + 7, it.screenY - 1.5);
-      ctx.fillStyle = "white"; ctx.fillText(p.name, it.screenX + size + 6, it.screenY - 2);
+    if (showLabelsInput.checked) {
+      ctx.font = Math.max(10, Math.round(11 * (1 + it.scale * 0.12))) + 'px Poppins';
+      // subtle shadow for readability
+      ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillText(p.name, it.screenX + size + 7, it.screenY - 1.5);
+      ctx.fillStyle = 'white'; ctx.fillText(p.name, it.screenX + size + 6, it.screenY - 2);
     }
 
-    lastFrameObjects.push({id:p.id, name:p.name, screenX:it.screenX, screenY:it.screenY, radius:size, texture:p.texture});
-    if (showTrailsInput.checked){
-      const key = p.id; trails[key].push({x:it.screenX, y:it.screenY});
-      if (trails[key].length>MAX_TRAIL) trails[key].shift();
-      if (trails[key].length>1){
+    lastFrameObjects.push({ id: p.id, name: p.name, screenX: it.screenX, screenY: it.screenY, radius: size, texture: p.texture });
+
+    // trails
+    if (showTrailsInput.checked) {
+      const key = p.id;
+      trails[key].push({ x: it.screenX, y: it.screenY });
+      if (trails[key].length > MAX_TRAIL) trails[key].shift();
+      if (trails[key].length > 1) {
         ctx.beginPath();
-        for (let i=0;i<trails[key].length;i++){ const t=trails[key][i]; if (i===0) ctx.moveTo(t.x,t.y); else ctx.lineTo(t.x,t.y); }
-        ctx.strokeStyle = "rgba(180,200,255,0.22)"; ctx.lineWidth = 1; ctx.stroke();
+        for (let i = 0; i < trails[key].length; i++) { const t = trails[key][i]; if (i === 0) ctx.moveTo(t.x, t.y); else ctx.lineTo(t.x, t.y); }
+        ctx.strokeStyle = 'rgba(180,200,255,0.18)'; ctx.lineWidth = 1; ctx.stroke();
       }
     }
   }
 
-  // moon top
-  if (prM){
-    const moonX = cx + prM.x - centerPan.dx, moonY = cy + prM.y - centerPan.dy;
+  // draw moon on top
+  if (prM) {
+    const moonX = cx + prM.x - centerPanX, moonY = cy + prM.y - centerPanY;
     const msize = Math.max(2, moon.size * 2 * prM.s);
-    ctx.save(); ctx.beginPath(); ctx.arc(moonX, moonY, msize, 0, Math.PI*2); ctx.closePath(); ctx.clip();
-    if (!perfMode && textures.Moon) ctx.drawImage(textures.Moon, moonX-msize, moonY-msize, msize*2, msize*2); else { ctx.fillStyle="#ccc"; ctx.fill(); }
+    ctx.save(); ctx.beginPath(); ctx.arc(moonX, moonY, msize, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+    if (!perfMode && textures.Moon) ctx.drawImage(textures.Moon, moonX - msize, moonY - msize, msize * 2, msize * 2);
+    else { ctx.fillStyle = '#ccc'; ctx.fill(); }
     ctx.restore();
-    if (showLabelsInput.checked){ ctx.fillStyle="rgba(0,0,0,0.6)"; ctx.fillText("Moon", moonX+msize+7, moonY-1.5); ctx.fillStyle="white"; ctx.fillText("Moon", moonX+msize+6, moonY-2); }
-    lastFrameObjects.push({id:moon.id, name:moon.name, screenX:moonX, screenY:moonY, radius:msize});
-    if (showTrailsInput.checked){
-      trails[moon.id].push({x:moonX,y:moonY}); if (trails[moon.id].length>MAX_TRAIL) trails[moon.id].shift();
-    }
+    if (showLabelsInput.checked) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillText('Moon', moonX + msize + 7, moonY - 1.5); ctx.fillStyle = 'white'; ctx.fillText('Moon', moonX + msize + 6, moonY - 2); }
+    lastFrameObjects.push({ id: moon.id, name: moon.name, screenX: moonX, screenY: moonY, radius: msize });
   }
 
-  // tooltip position maintained
-  if (tooltip.style.display === "block" && lastHover){
-    const ho = lastFrameObjects.find(o=>o.id===lastHover);
-    if (ho){
+  // keep tooltip positioned if visible
+  if (tooltip.style.display === 'block' && lastHover) {
+    const ho = lastFrameObjects.find(o => o.id === lastHover);
+    if (ho) {
       let left = ho.screenX + 16, top = ho.screenY - 8;
-      left = Math.min(Math.max(8,left), cw - 320); top = Math.min(Math.max(8,top), ch - 80);
+      left = Math.min(Math.max(8, left), cw - 320); top = Math.min(Math.max(8, top), ch - 80);
       tooltip.style.transform = `translate(${left}px, ${top}px)`;
-    } else { tooltip.style.display = "none"; }
+    } else tooltip.style.display = 'none';
   }
 
   requestAnimationFrame(draw);
 }
 
-/* start */
-preloadTextures(()=>{ requestAnimationFrame(draw); });
+/* start after textures load */
+preloadTextures(() => requestAnimationFrame(draw));
 
-/* Visits: call serverless endpoint /api/visits (see server function code below) */
-async function fetchVisits(){
-  try {
-    const res = await fetch('/api/visits');
-    if (res.ok){
-      const j = await res.json();
-      if (j && typeof j.value !== 'undefined'){ visitsEl.textContent = Number(j.value).toLocaleString(); return; }
-    } else {
-      console.warn('visits fetch failed', res.status);
-    }
-  } catch(e){ console.warn('visits fetch err', e); }
-  // fallback: local increment
-  try {
-    const key = 'visits_fallback_v1';
-    let v = parseInt(localStorage.getItem(key) || '0',10) || 0;
-    v++; localStorage.setItem(key, v); visitsEl.textContent = v.toLocaleString() + ' (local)';
-  } catch(e){}
-}
-fetchVisits();
+/* start audio on first interaction */
+window.addEventListener('pointerdown', () => { if (!bgAudio.src) bgAudio.src = audioSelect.value; bgAudio.play().catch(() => {}); }, { once: true });
 
-/* modal: clicking more opens NASA link (already wired) */
+/* save PNG */
+saveBtn.onclick = () => {
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = 'solar-cinematic.png';
+  link.click();
+};
 
-/* heuristic: if textures not loaded and perfMode off, still show; otherwise when perfMode on we disable textures already */
-perfModeInput.onchange = ()=>{ if (perfModeInput.checked) { zoomInput.max = 5; } else { zoomInput.max = 10; } };
+/* ensure tooltip hides on leave */
+canvas.addEventListener('pointerleave', () => { tooltip.style.display = 'none'; lastHover = null; });
 
-/* keep UI text sync */
+/* tune initial UI text */
 zoomValue.textContent = parseFloat(zoomInput.value).toFixed(2);
 scaleValue.textContent = parseFloat(timeScaleInput.value).toFixed(2) + 'x';
 
-/* tooltip hide on leave */
-canvas.addEventListener("pointerleave", ()=>{ tooltip.style.display='none'; lastHover=null; });
-
-/* ensure sidebar toggle tab clickable even when collapsed (left visible area) */
-sidebar.addEventListener('transitionend', ()=>{ resize(); });
-
+</script>
+<script>
+async function updateVisitCount() {
+  try {
+    const res = await fetch("/api/visits");
+    const data = await res.json();
+    document.getElementById("visitCount").textContent = data.count.toLocaleString();
+  } catch (err) {
+    console.warn("Visit count fetch failed:", err);
+    document.getElementById("visitCount").textContent = "—";
+  }
+}
+updateVisitCount();
 </script>
 </body>
 </html>
