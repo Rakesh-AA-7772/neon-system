@@ -43,7 +43,7 @@
             <label class="switch-row" for="showLabels"><input id="showLabels" type="checkbox" checked /><span>Show labels</span></label>
             <label class="switch-row" for="perfMode"><input id="perfMode" type="checkbox" /><span>Performance mode</span></label>
           </div>
-          <p class="helper-text">Performance mode uses simpler rendering for slower devices.</p>
+          <p class="helper-text">Performance mode reduces detail, effects, star count and render resolution.</p>
 
           <div class="select-control">
             <label for="centerOn">Focus object</label>
@@ -64,6 +64,27 @@
             <button id="resetBtn" class="button button-primary" type="button">Reset view</button>
             <button id="saveBtn" class="button button-secondary" type="button">Save PNG</button>
           </div>
+        </section>
+
+        <section class="panel distance-panel" aria-label="Real average orbital distances">
+          <details class="distance-details" open>
+            <summary class="distance-summary">
+              <span>REAL ORBIT DISTANCES</span>
+              <span class="panel-dot" aria-hidden="true"></span>
+            </summary>
+            <p class="distance-note">Average distance from the Sun · NASA data</p>
+            <div class="distance-list">
+              <div class="distance-row"><span>Mercury <small>0.387 AU</small></span><strong>57.9M km</strong></div>
+              <div class="distance-row"><span>Venus <small>0.723 AU</small></span><strong>108.2M km</strong></div>
+              <div class="distance-row"><span>Earth <small>1.000 AU</small></span><strong>149.6M km</strong></div>
+              <div class="distance-row"><span>Mars <small>1.524 AU</small></span><strong>227.9M km</strong></div>
+              <div class="distance-row"><span>Jupiter <small>5.20 AU</small></span><strong>778.6M km</strong></div>
+              <div class="distance-row"><span>Saturn <small>9.58 AU</small></span><strong>1.434B km</strong></div>
+              <div class="distance-row"><span>Uranus <small>19.20 AU</small></span><strong>2.872B km</strong></div>
+              <div class="distance-row"><span>Neptune <small>30.05 AU</small></span><strong>4.495B km</strong></div>
+            </div>
+            <p class="distance-footnote">Orbit spacing is linear in AU. Planet sizes and the Moon's displayed separation are enlarged for visibility.</p>
+          </details>
         </section>
 
         <section class="panel audio-panel" aria-label="Audio controls">
@@ -93,7 +114,7 @@
           <span aria-hidden="true">☰</span>
         </button>
         <div id="tooltip" role="status" aria-live="polite"></div>
-        <div class="camera-hint">DRAG TO ROTATE <span>•</span> SCROLL TO ZOOM <span>•</span> SPACE TO PAUSE</div>
+        <div class="camera-hint">DRAG TO ROTATE <span>•</span> SCROLL TO ZOOM <span>•</span> DISTANCES IN AU</div>
       </section>
 
       <div id="planetModal" class="modal-overlay" aria-hidden="true" hidden>

@@ -1,4 +1,4 @@
-import { BODY_BY_ID } from '../data/solar-system.js';
+import { BODY_BY_ID, formatAU, formatAverageDistance } from '../data/solar-system.js';
 
 /** Accessible planet details dialog with consistent, id-based NASA destinations. */
 export function createPlanetModal() {
@@ -25,7 +25,11 @@ export function createPlanetModal() {
 
     previouslyFocused = document.activeElement;
     title.textContent = body.name;
-    description.textContent = body.description;
+    description.textContent = body.kind === 'planet'
+      ? `${body.description}\n\nAverage distance from the Sun: ${formatAverageDistance(body)} (${formatAU(body.distAU)} AU).`
+      : body.kind === 'moon'
+        ? `${body.description}\n\nAverage distance from Earth: ${formatAverageDistance(body)}.`
+        : body.description;
     image.src = body.texture;
     image.alt = `${body.name} surface texture`;
     moreLink.href = body.nasaUrl;

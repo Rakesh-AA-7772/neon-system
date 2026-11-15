@@ -221,3 +221,39 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; touch-action:
   pointer-events: none;
 }
 .scene-label[hidden] { display: none; }
+
+/* NASA-backed distance panel */
+.distance-panel { padding-top: 13px; }
+.distance-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #91a0c5;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.45px;
+  cursor: pointer;
+  list-style: none;
+}
+.distance-summary::-webkit-details-marker { display: none; }
+.distance-summary::after { content: '−'; margin-left: auto; color: #91a0c5; font-size: 14px; }
+.distance-details:not([open]) .distance-summary::after { content: '+'; }
+.distance-note { margin: 8px 0 10px; color: #8190b1; font-size: 9px; }
+.distance-list { display: grid; gap: 7px; }
+.distance-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: #dbe4ff; font-size: 10px; }
+.distance-row small { margin-left: 4px; color: #7ddff0; font-size: 9px; }
+.distance-row strong { color: #c4cdeb; font-size: 9px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.distance-footnote { margin: 11px 0 0; padding-top: 9px; color: #7e8eaf; font-size: 8px; line-height: 1.55; border-top: 1px solid rgba(166,184,255,0.1); }
+
+/* Very slow atmospheric drift behind the WebGL star field. */
+#scene::before { animation: star-drift 150s linear infinite alternate; }
+@keyframes star-drift {
+  from { transform: translate3d(-0.25%, -0.15%, 0); }
+  to { transform: translate3d(0.25%, 0.15%, 0); }
+}
+.scene-label { padding: 3px 5px; background: rgba(5,9,21,0.42); border: 1px solid rgba(167,189,255,0.13); border-radius: 5px; }
+.scene-label-distance { display: block; margin-top: 3px; color: #7ddff0; font-size: 8px; letter-spacing: 0; }
+@media (prefers-reduced-motion: reduce) {
+  #scene::before { animation: none; }
+}

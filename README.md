@@ -1,96 +1,95 @@
-# Neon System — 3D Solar System Visualizer
+# Neon System — Solar System Visualizer
 
-A cinematic, interactive Solar System visualizer built with Vite and Three.js. The project began as a single HTML experiment in 2025 and has been progressively reorganized into reusable modules.
+A cinematic, interactive Solar System visualizer built with Vite and Three.js.
 
 ## Features
 
-- Real-time 3D Sun, eight planets and the Moon, using the original surface textures
-- Saturn's ring system, soft solar glow and a lightweight star field
-- Drag to rotate the scene; scroll or use the zoom slider to zoom
-- Pause, time-scale, focus-object, orbit, trail and projected-label controls
-- Performance mode with reduced sphere detail, fewer stars, a capped pixel ratio and a 30 FPS render limit
-- Automatic lower-resolution settings on smaller / lower-core devices
-- WebGL 2 renderer with a Canvas 2D compatibility fallback when WebGL 2 is unavailable
-- Planet information dialog with links to NASA science pages
-- Optional background audio that starts only after pressing **Play**
-- PNG export of the rendered 3D scene
-- Responsive control panel for desktop and mobile
-- Optional `/api/visits` endpoint with a clearly labelled per-browser fallback
+- Real 3D textured Sun, eight planets and the Moon
+- Planetary orbit paths positioned from NASA's published mean Sun distances in AU
+- Eccentric elliptical paths and orbital inclinations for a more realistic layout
+- Average distance labels and a distance reference panel in AU and kilometres
+- Atmospheric glow layers for Venus, Earth, Mars, Uranus and Neptune
+- Saturn's rings, Jupiter's Great Red Spot and band accents
+- Slowly drifting background stars and eased camera focus transitions
+- Drag to rotate, scroll or slider to zoom, and click a planet for its details
+- Pause, time-scale, focus-object, orbit, trail and label controls
+- Performance mode with reduced sphere detail, fewer stars, disabled atmosphere layers, 1.0 pixel ratio and a 30 FPS cap
+- No real-time shadows or post-processing effects
+- WebGL 2 renderer with a Canvas 2D compatibility fallback
+- Optional background audio (starts only after pressing Play)
+- PNG export of the rendered view and responsive mobile controls
 
-> The scene uses cinematic distances, planet sizes and orbital speeds for readability. It is not a scale model or an ephemeris.
+## Scientific scale notes
 
-## Requirements
+- Orbit radii are linear in AU, using the planets' published mean Sun distances (approximately their orbital semi-major axes).
+- The table and planet labels show the real average distance in AU and kilometres.
+- Planet visual radii are enlarged so they remain visible. Their diameters are not to scale with the orbit distances.
+- The Moon's displayed separation from Earth is enlarged; its real average Earth distance (384,400 km) is shown in the tooltip and profile.
+- Orbital paths use simplified ellipses. This is an educational visualization, not a real-time ephemeris or a prediction of exact planetary positions.
 
-- Node.js 18 or newer
-- npm
-- A browser with WebGL 2 for the 3D renderer. Browsers without WebGL 2 use the Canvas 2D fallback.
+### Sources
+
+- NASA, [Planet Sizes and Locations](https://science.nasa.gov/solar-system/planets/planet-sizes-and-locations-in-our-solar-system/)
+- NASA, [The Solar System — mean planetary distances and orbital data](https://science.nasa.gov/learn/basics-of-space-flight/chapter1-2/)
 
 ## Run locally
+
+Requirements: Node.js 18+ and npm.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Vite prints the local development URL in the terminal (normally `http://localhost:5173`).
-
-## Production build
+Build and preview:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-The production-ready static site is written to `dist/`. For Vercel, use `npm run build` as the build command and `dist` as the output directory.
+Vercel build command: `npm run build`. Output directory: `dist`.
 
 ## Project structure
 
 ```text
 public/
-  audio/                 Background music files
-  textures/              Sun, planet and Moon surface textures
+  audio/
+  textures/
 src/
   core/
-    math.js              Numeric helpers
-    renderer.js          Three.js scene, camera, geometry and interaction
-    renderer-2d.js       Lightweight compatibility renderer
+    math.js
+    renderer.js
+    renderer-2d.js
   data/
-    solar-system.js      Reusable celestial-body metadata
+    solar-system.js
   services/
-    audio.js             Explicit play, pause and track selection
-    visits.js            Visit API integration and local fallback
+    audio.js
+    visits.js
   ui/
-    controls.js          Sidebar controls and keyboard shortcuts
-    planet-modal.js      Accessible planet details dialog
-  main.js                App entry point and renderer fallback
-  style.css              Application styles
-index.html               Accessible application shell
-vite.config.js           Vite configuration
-package.json             Scripts and dependencies
+    controls.js
+    planet-modal.js
+  main.js
+  style.css
+index.html
+package.json
+vite.config.js
 ```
 
-## Performance decisions
+## Performance approach
 
-- One shared sphere geometry is reused for every celestial body.
-- Texture maps are loaded once and reused; anisotropic filtering is capped.
-- Real-time shadows and post-processing / bloom are intentionally disabled.
-- The star field is a single `THREE.Points` draw call.
-- Orbit paths are generated once and reused rather than rebuilt every frame.
-- Device pixel ratio is capped at 1.5 normally and 1.0 in Performance Mode.
-- Performance Mode lowers sphere detail and star count and caps rendering at 30 FPS.
-- The renderer pauses visual work while the page is hidden.
-- Low-core and mobile devices use conservative antialiasing and pixel-ratio settings.
+- Reuses one sphere geometry for body surfaces and atmosphere shells.
+- Loads each surface texture once and reuses it.
+- Builds orbit paths once rather than regenerating them every frame.
+- Uses one `THREE.Points` star-field draw call.
+- Caps device pixel ratio, adapts antialiasing to smaller devices, and skips rendering while the document is hidden.
+- Performance Mode simplifies geometry, lowers the star count, hides atmosphere effects, uses a 1.0 pixel ratio and caps rendering at 30 FPS.
+- Real-time shadows, bloom and post-processing are intentionally disabled.
 
 ## Visit counter note
 
-The frontend requests `GET /api/visits` and accepts either `{ "count": 123 }` or `{ "value": 123 }`. There is no API implementation or persistent database in this repository. Until a server endpoint is configured, the UI falls back to a per-browser `localStorage` count and labels it `local`; this is not a global visitor total.
+The frontend requests `GET /api/visits` and accepts either `{ "count": 123 }` or `{ "value": 123 }`. No API or persistent database is included; until one is configured the interface uses a clearly labelled per-browser localStorage count.
 
-## Assets and licensing
+## Assets
 
-Textures and audio are served from `public/textures/` and `public/audio/`. Keep file names and casing in sync with the paths declared in `src/data/solar-system.js` and the audio selector in `index.html`. Confirm that you have the right to redistribute any third-party images or audio before publishing.
-
-## Notes
-
-- Three.js uses WebGL 2 for the main 3D renderer. A Canvas 2D renderer is retained as a compatibility fallback.
-- NASA links are informational outbound links. Planet descriptions are short summaries for the visualizer.
-- Audio is intentionally not autoplayed. A visitor must press **Play** to start it.
+Texture and audio files are served from `public/textures/` and `public/audio/`. Keep names and letter casing in sync with the paths in the data module and audio selector. Confirm redistribution rights for third-party media before publishing.

@@ -1,4 +1,4 @@
-import { CELESTIAL_BODIES, PLANETS, MOON } from '../data/solar-system.js';
+import { CELESTIAL_BODIES, PLANETS, MOON, formatAU, formatAverageDistance } from '../data/solar-system.js';
 import { auToWorld, clamp, project, rotateX, rotateY, TWO_PI } from './math.js';
 
 const GLOBAL_SPEED = 0.28;
@@ -64,17 +64,38 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     }
   }
 
+  function eccentricAnomalyFromMean(meanAnomaly, eccentricity) {
+    let estimate = eccentricity < 0.8 ? meanAnomaly : Math.PI;
+    for (let iteration = 0; iteration < 6; iteration += 1) {
+      const error = estimate - eccentricity * Math.sin(estimate) - meanAnomaly;
+      estimate -= error / (1 - eccentricity * Math.cos(estimate));
+    }
+    return estimate;
+  }
+
+  function orbitPosition(body, angle) {
+    const eccentricity = body.orbitalEccentricity || 0;
+    const semiMajor = body.distAU;
+    const semiMinor = semiMajor * Math.sqrt(1 - eccentricity * eccentricity);
+    return {
+      x: semiMajor * (Math.cos(angle) - eccentricity),
+      y: semiMinor * Math.sin(angle)
+    };
+  }
+
   function bodyWorldPosition(id) {
     if (id === MOON.id) {
       const earth = PLANETS.find((body) => body.id === 'earth');
+      const earthPosition = orbitPosition(earth, angles.earth);
+      const moonOffset = MOON.visualDistanceAU || MOON.distAU;
       return {
-        x: earth.distAU * Math.cos(angles.earth) + MOON.distAU * Math.cos(angles.moon),
-        y: earth.distAU * Math.sin(angles.earth) + MOON.distAU * Math.sin(angles.moon)
+        x: earthPosition.x + moonOffset * Math.cos(angles.moon),
+        y: earthPosition.y + moonOffset * Math.sin(angles.moon)
       };
     }
     const body = PLANETS.find((candidate) => candidate.id === id);
     if (!body) return { x: 0, y: 0 };
-    return { x: body.distAU * Math.cos(angles[id]), y: body.distAU * Math.sin(angles[id]) };
+    return orbitPosition(body, eccentricAnomalyFromMean(angles[id], body.orbitalEccentricity || 0));
   }
 
   function projectWorldPosition(xAU, yAU) {
@@ -180,14 +201,18 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
 
   function drawBody(body, screenX, screenY, radius, scale = 1) {
     drawTexture(body, screenX, screenY, radius);
-    drawLabel(body.name, screenX, screenY, radius, scale);
+    const label = body.kind === 'planet'
+      ? `${body.name} · ${formatAU(body.distAU)} AU`
+      : body.name;
+    drawLabel(label, screenX, screenY, radius, scale);
     frameObjects.push({
       id: body.id,
       name: body.name,
       screenX,
       screenY,
       radius,
-      description: body.description
+      description: body.description,
+      distanceText: formatAverageDistance(body)
     });
     if (state.showTrails && body.id !== 'sun') appendTrail(body.id, screenX, screenY);
   }
@@ -200,7 +225,8 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
       const points = new Array(steps);
       for (let index = 0; index < steps; index += 1) {
         const angle = (index / steps) * TWO_PI;
-        const projected = projectWorldPosition(body.distAU * Math.cos(angle), body.distAU * Math.sin(angle));
+        const orbitPoint = orbitPosition(body, angle);
+        const projected = projectWorldPosition(orbitPoint.x, orbitPoint.y);
         points[index] = projected
           ? { x: centerX + projected.x - pan.x, y: centerY + projected.y - pan.y }
           : { x: Number.NaN, y: Number.NaN };
@@ -220,7 +246,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     }
     const left = clamp(hovered.screenX + 18, 10, Math.max(10, width - 300));
     const top = clamp(hovered.screenY - 12, 10, Math.max(10, height - 100));
-    tooltip.textContent = `${hovered.name}\n${hovered.description}`;
+    tooltip.textContent = `${hovered.name}\n${hovered.description}\n${hovered.distanceText}`;
     tooltip.style.transform = `translate(${left}px, ${top}px)`;
     tooltip.hidden = false;
     tooltip.style.display = 'block';
@@ -253,7 +279,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     if (sunProjected) {
       const sunX = centerX + sunProjected.x - pan.x;
       const sunY = centerY + sunProjected.y - pan.y;
-      const sunRadius = sun.size * 2 * (1 + (state.zoom - 1) * 0.4);
+      const sunRadius = Math.max(3, sun.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * (1 + (state.zoom - 1) * 0.4));
       drawSunGlow(sunX, sunY, 80 * (1 + (state.zoom - 1) * 0.4));
       drawBody(sun, sunX, sunY, sunRadius, sunProjected.scale);
     }
@@ -272,7 +298,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     }).filter(Boolean).sort((a, b) => a.depth - b.depth);
 
     for (const item of visiblePlanets) {
-      const radius = item.body.size * 2;
+      const radius = Math.max(2.5, item.body.visualRadius * (Math.min(width, height) * 0.42 / 30.05));
       drawBody(item.body, item.x, item.y, radius, item.scale);
     }
 
@@ -281,7 +307,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     if (moonProjected) {
       const moonX = centerX + moonProjected.x - pan.x;
       const moonY = centerY + moonProjected.y - pan.y;
-      const moonRadius = Math.max(2, MOON.size * 2 * moonProjected.scale);
+      const moonRadius = Math.max(2, MOON.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * moonProjected.scale);
       drawBody(MOON, moonX, moonY, moonRadius, moonProjected.scale);
     }
 
@@ -329,7 +355,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     if (hovered) {
       lastHoverId = hovered.id;
       canvas.style.cursor = 'pointer';
-      tooltip.textContent = `${hovered.name}\n${hovered.description}`;
+      tooltip.textContent = `${hovered.name}\n${hovered.description}\n${hovered.distanceText}`;
       const left = clamp(hovered.screenX + 18, 10, Math.max(10, width - 300));
       const top = clamp(hovered.screenY - 12, 10, Math.max(10, height - 100));
       tooltip.style.transform = `translate(${left}px, ${top}px)`;

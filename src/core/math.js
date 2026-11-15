@@ -1,8 +1,11 @@
 export const TWO_PI = Math.PI * 2;
+export const MAX_ORBIT_AU = 30.05;
 
 export function auToWorld(au, width, height, zoom) {
-  const base = Math.min(width, height) * 0.7;
-  return Math.sign(au) * Math.pow(Math.abs(au) + 0.15, 0.95) * base * zoom;
+  // Linear AU mapping: Neptune's average orbit defines the outer edge.
+  // Planet radii are enlarged separately for visibility.
+  const base = Math.min(width, height) * 0.42;
+  return (Number(au) / MAX_ORBIT_AU) * base * zoom;
 }
 
 export function rotateY(x, y, z, angle) {
@@ -22,12 +25,7 @@ export function project(point, cameraZ, focalLength) {
   const denominator = focalLength + depth;
   if (!Number.isFinite(denominator) || denominator === 0) return null;
   const scale = focalLength / denominator;
-  return {
-    x: point.x * scale,
-    y: point.y * scale,
-    scale,
-    depth
-  };
+  return { x: point.x * scale, y: point.y * scale, scale, depth };
 }
 
 export function clamp(value, min, max) {
