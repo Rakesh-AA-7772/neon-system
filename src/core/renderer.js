@@ -87,7 +87,7 @@ function bodyDistanceLine(body) {
  * Shares sphere geometry, avoids shadows/post-processing, builds orbit buffers
  * once, and scales detail/resolution/frame rate down in Performance Mode.
  */
-export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomChange }) {
+export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomChange, onExploreChange }) {
   const host = canvas.parentElement;
   const hardwareThreads = navigator.hardwareConcurrency || 4;
   const smallScreen = window.matchMedia?.('(max-width: 820px)').matches ?? false;
@@ -115,7 +115,7 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
     running: true, timeScale: 1, zoom: 1, targetZoom: 1,
     yaw: -0.12, pitch: -0.30, targetYaw: -0.12, targetPitch: -0.30,
     centerOn: 'sun', showOrbits: true, showTrails: false,
-    showLabels: true, performanceMode: false
+    showLabels: true, performanceMode: false, explorationId: null
   };
 
   const angles = Object.fromEntries(CELESTIAL_BODIES.map((body) => [body.id, Math.random() * TWO_PI]));
@@ -254,7 +254,7 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
     bodyGroups.set(body.id, group);
     bodyMeshes.set(body.id, mesh);
     sphereMeshes.push(mesh);
-    if (body.kind !== 'star') interactiveMeshes.push(mesh);
+    interactiveMeshes.push(mesh);
 
     if (body.id === 'saturn') {
       const rings = new THREE.Mesh(
@@ -368,7 +368,9 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
 
     // The outer 30.05 AU orbit fits with margin in landscape and portrait.
     baseCameraDistance = Math.max(100, 92 / Math.max(0.35, aspect));
-    targetCameraDistance = baseCameraDistance * (state.centerOn === 'sun' ? 1 : FOCUS_CAMERA_FACTOR);
+    targetCameraDistance = state.explorationId
+      ? getExplorationCameraDistance(state.explorationId)
+      : baseCameraDistance * (state.centerOn === 'sun' ? 1 : FOCUS_CAMERA_FACTOR);
     const pixelRatio = state.performanceMode
       ? 1
       : Math.min(window.devicePixelRatio || 1, lowPowerDevice ? 1.25 : 1.5);
@@ -376,6 +378,11 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
     renderer.setSize(width, height, false);
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
+  }
+
+  function getExplorationCameraDistance(bodyId) {
+    const body = CELESTIAL_BODIES.find((candidate) => candidate.id === bodyId);
+    return clamp((body?.visualRadius || 0.1) * 8.5, 0.62, 3.2);
   }
 
   function bodyWorldPosition(id, target = new THREE.Vector3()) {
@@ -467,6 +474,10 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
       const group = bodyGroups.get(body.id);
       const label = labelElements.get(body.id);
       if (!group || !label) continue;
+      if (state.explorationId && body.id !== state.explorationId) {
+        label.hidden = true;
+        continue;
+      }
       group.getWorldPosition(worldPoint);
       worldPoint.project(camera);
       const visible = worldPoint.z >= -1 && worldPoint.z <= 1 &&
@@ -496,7 +507,7 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
   }
 
   function updateTrails(now) {
-    if (!state.showTrails || now - lastTrailTime < (state.performanceMode ? 150 : 90)) return;
+    if (state.explorationId || !state.showTrails || now - lastTrailTime < (state.performanceMode ? 150 : 90)) return;
     lastTrailTime = now;
     for (const [id, trail] of trails) {
       const group = bodyGroups.get(id);
@@ -651,11 +662,39 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
     setZoom(value) { state.targetZoom = clamp(Number(value), 0.5, 10); },
     setShowOrbits(enabled) {
       state.showOrbits = Boolean(enabled);
-      for (const line of orbitLines) line.visible = state.showOrbits;
+      for (const line of orbitLines) line.visible = state.showOrbits && !state.explorationId;
     },
     setShowTrails(enabled) {
       state.showTrails = Boolean(enabled);
-      if (!state.showTrails) clearTrails();
+      if (!state.showTrails || state.explorationId) clearTrails();
+    },
+    enterExplore(id) {
+      if (!bodyGroups.has(id)) return false;
+      state.explorationId = id;
+      state.centerOn = id;
+      state.zoom = 1;
+      state.targetZoom = 1;
+      targetCameraDistance = getExplorationCameraDistance(id);
+      for (const line of orbitLines) line.visible = false;
+      clearTrails();
+      updateLabels();
+      onExploreChange?.(id);
+      onZoomChange?.(1);
+      return true;
+    },
+    exitExplore() {
+      if (!state.explorationId) return false;
+      state.explorationId = null;
+      state.centerOn = 'sun';
+      state.zoom = 1;
+      state.targetZoom = 1;
+      targetCameraDistance = baseCameraDistance;
+      for (const line of orbitLines) line.visible = state.showOrbits;
+      clearTrails();
+      updateLabels();
+      onExploreChange?.(null);
+      onZoomChange?.(1);
+      return true;
     },
     setShowLabels(enabled) {
       state.showLabels = Boolean(enabled);
@@ -663,6 +702,10 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
     },
     setCenterOn(id) {
       if (!bodyGroups.has(id)) return;
+      if (state.explorationId) {
+        this.enterExplore(id);
+        return;
+      }
       state.centerOn = id;
       targetCameraDistance = baseCameraDistance * (id === 'sun' ? 1 : FOCUS_CAMERA_FACTOR);
     },
@@ -682,6 +725,8 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
       state.targetYaw = -0.12;
       state.targetPitch = -0.30;
       state.centerOn = 'sun';
+      state.explorationId = null;
+      onExploreChange?.(null);
       state.showOrbits = true;
       state.showTrails = false;
       state.showLabels = true;

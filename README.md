@@ -93,3 +93,12 @@ The frontend requests `GET /api/visits` and accepts either `{ "count": 123 }` or
 ## Assets
 
 Texture and audio files are served from `public/textures/` and `public/audio/`. Keep names and letter casing in sync with the paths in the data module and audio selector. Confirm redistribution rights for third-party media before publishing.
+
+
+## Planet exploration mode
+
+- Select any planet or the Sun to enter a close-up view with a smooth camera dolly.
+- Use the exploration HUD to browse the previous/next world, see key orbital and rotation facts, or open the full fact sheet.
+- Press Escape or use Return to Solar System to move back to the orbital overview.
+- The HUD reuses the current scene, meshes, materials and textures. It does not create another WebGL scene or add a post-processing pipeline.
+- The Canvas 2D compatibility renderer supports the same basic exploration flow.

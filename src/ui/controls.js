@@ -1,5 +1,5 @@
 /** Connect the control panel to the renderer and own its keyboard shortcuts. */
-export function bindControls(renderer, { onZoomChange } = {}) {
+export function bindControls(renderer, { onZoomChange, onExplore } = {}) {
   const $ = (id) => document.getElementById(id);
   const sidebar = $('sidebar');
   const sidebarToggle = $('sidebarToggle');
@@ -15,6 +15,7 @@ export function bindControls(renderer, { onZoomChange } = {}) {
   const performanceMode = $('perfMode');
   const resetButton = $('resetBtn');
   const saveButton = $('saveBtn');
+  const exploreButton = $('exploreFocusBtn');
 
   const syncZoom = (value) => {
     zoom.value = String(value);
@@ -54,6 +55,7 @@ export function bindControls(renderer, { onZoomChange } = {}) {
   const onShowTrailsChange = () => renderer.setShowTrails(showTrails.checked);
   const onShowLabelsChange = () => renderer.setShowLabels(showLabels.checked);
   const onCenterChange = () => renderer.setCenterOn(centerOn.value);
+  const onExploreSelected = () => onExplore?.(centerOn.value);
   const onPerformanceChange = () => renderer.setPerformanceMode(performanceMode.checked);
 
   const onReset = () => {
@@ -97,6 +99,7 @@ export function bindControls(renderer, { onZoomChange } = {}) {
   performanceMode.addEventListener('change', onPerformanceChange);
   resetButton.addEventListener('click', onReset);
   saveButton.addEventListener('click', () => renderer.saveImage());
+  exploreButton.addEventListener('click', onExploreSelected);
   window.addEventListener('keydown', onKeyDown);
   applyResponsiveSidebar();
   onTimeScaleInput();
@@ -116,6 +119,7 @@ export function bindControls(renderer, { onZoomChange } = {}) {
       centerOn.removeEventListener('change', onCenterChange);
       performanceMode.removeEventListener('change', onPerformanceChange);
       resetButton.removeEventListener('click', onReset);
+      exploreButton.removeEventListener('click', onExploreSelected);
       window.removeEventListener('keydown', onKeyDown);
     }
   };

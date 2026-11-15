@@ -25,11 +25,12 @@ export function createPlanetModal() {
 
     previouslyFocused = document.activeElement;
     title.textContent = body.name;
-    description.textContent = body.kind === 'planet'
-      ? `${body.description}\n\nAverage distance from the Sun: ${formatAverageDistance(body)} (${formatAU(body.distAU)} AU).`
-      : body.kind === 'moon'
-        ? `${body.description}\n\nAverage distance from Earth: ${formatAverageDistance(body)}.`
-        : body.description;
+    const metrics = [];
+    if (body.kind === 'planet') metrics.push(`Average distance from the Sun: ${formatAverageDistance(body)} (${formatAU(body.distAU)} AU).`);
+    if (body.kind === 'moon') metrics.push(`Average distance from Earth: ${formatAverageDistance(body)}.`);
+    if (body.orbitalPeriodDays) metrics.push(`Orbital period: ${body.orbitalPeriodDays.toLocaleString(undefined, { maximumFractionDigits: 2 })} days.`);
+    if (Number.isFinite(body.axialTiltDeg)) metrics.push(`Axial tilt: ${body.axialTiltDeg.toFixed(2)}°.`);
+    description.textContent = metrics.length ? `${body.description}\n\n${metrics.join('\n')}` : body.description;
     image.src = body.texture;
     image.alt = `${body.name} surface texture`;
     moreLink.href = body.nasaUrl;
@@ -45,7 +46,11 @@ export function createPlanetModal() {
   }
 
   function onKeyDown(event) {
-    if (event.key === 'Escape' && !overlay.hidden) close();
+    if (event.key === 'Escape' && !overlay.hidden) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      close();
+    }
   }
 
   closeButton.addEventListener('click', close);

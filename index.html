@@ -61,7 +61,10 @@
             </select>
           </div>
           <div class="button-row">
-            <button id="resetBtn" class="button button-primary" type="button">Reset view</button>
+            <button id="exploreFocusBtn" class="button button-primary" type="button">Explore selected ↗</button>
+          </div>
+          <div class="button-row">
+            <button id="resetBtn" class="button button-secondary" type="button">Reset view</button>
             <button id="saveBtn" class="button button-secondary" type="button">Save PNG</button>
           </div>
         </section>
@@ -109,11 +112,33 @@
       </aside>
 
       <section id="scene" aria-label="Interactive Solar System scene">
-        <canvas id="canvas" aria-label="Animated Solar System. Drag to rotate, scroll to zoom, and select a planet for details."></canvas>
+        <canvas id="canvas" tabindex="0" aria-label="Animated Solar System. Drag to rotate, scroll to zoom, and select a planet to explore."></canvas>
         <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="Toggle controls" aria-controls="sidebar" aria-expanded="true">
           <span aria-hidden="true">☰</span>
         </button>
         <div id="tooltip" role="status" aria-live="polite"></div>
+        <aside id="explorationHud" class="exploration-hud" aria-label="Planet exploration" aria-live="polite" aria-hidden="true" hidden>
+          <header class="exploration-header">
+            <span class="eyebrow">DEEP SPACE EXPLORER</span>
+            <button id="explorationClose" class="icon-button exploration-close" type="button" aria-label="Return to Solar System">×</button>
+          </header>
+          <p id="explorationKind" class="exploration-kind">PLANETARY PROFILE</p>
+          <h2 id="explorationName">Earth</h2>
+          <p id="explorationDescription" class="exploration-description"></p>
+          <div class="exploration-metrics">
+            <div><span id="explorationDistanceLabel">Average Sun distance</span><strong id="explorationDistance">149.6 million km</strong></div>
+            <div><span>Orbital period</span><strong id="explorationPeriod">1.00 Earth years</strong></div>
+            <div><span>Axial tilt</span><strong id="explorationTilt">23.44°</strong></div>
+            <div><span>Rotation period</span><strong id="explorationRotation">23.93 hours</strong></div>
+          </div>
+          <div class="exploration-actions">
+            <button id="explorationPrevious" class="button button-secondary" type="button">← Previous</button>
+            <button id="explorationDetails" class="button button-primary" type="button">Planet facts</button>
+            <button id="explorationNext" class="button button-secondary" type="button">Next →</button>
+          </div>
+          <p class="exploration-hint">Select another visible world to travel there, or press Esc to return.</p>
+          <button id="explorationReturn" class="exploration-return" type="button">↗ Return to full Solar System</button>
+        </aside>
         <div class="camera-hint">DRAG TO ROTATE <span>•</span> SCROLL TO ZOOM <span>•</span> DISTANCES IN AU</div>
       </section>
 

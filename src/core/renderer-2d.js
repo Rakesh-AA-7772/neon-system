@@ -7,7 +7,7 @@ const FOCAL_LENGTH = 1000;
 const CAMERA_Z = 2000;
 
 /** Canvas renderer for the cinematic (intentionally non-scale) Solar System. */
-export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoomChange }) {
+export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoomChange, onExploreChange }) {
   const context = canvas.getContext('2d', { alpha: true });
   if (!context) throw new Error('This browser does not support the Canvas 2D renderer.');
 
@@ -24,7 +24,8 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     showOrbits: true,
     showTrails: false,
     showLabels: true,
-    performanceMode: false
+    performanceMode: false,
+    explorationId: null
   };
 
   const angles = Object.fromEntries(CELESTIAL_BODIES.map((body) => [body.id, Math.random() * TWO_PI]));
@@ -214,11 +215,11 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
       description: body.description,
       distanceText: formatAverageDistance(body)
     });
-    if (state.showTrails && body.id !== 'sun') appendTrail(body.id, screenX, screenY);
+    if (state.showTrails && !state.explorationId && body.id !== 'sun') appendTrail(body.id, screenX, screenY);
   }
 
   function drawOrbits(centerX, centerY, pan) {
-    if (!state.showOrbits) return;
+    if (!state.showOrbits || state.explorationId) return;
     const steps = state.performanceMode ? 64 : 160;
     for (const body of PLANETS) {
       if (body.id === 'sun') continue;
@@ -279,7 +280,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     if (sunProjected) {
       const sunX = centerX + sunProjected.x - pan.x;
       const sunY = centerY + sunProjected.y - pan.y;
-      const sunRadius = Math.max(3, sun.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * (1 + (state.zoom - 1) * 0.4));
+      const sunRadius = Math.max(3, sun.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * state.zoom);
       drawSunGlow(sunX, sunY, 80 * (1 + (state.zoom - 1) * 0.4));
       drawBody(sun, sunX, sunY, sunRadius, sunProjected.scale);
     }
@@ -298,7 +299,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     }).filter(Boolean).sort((a, b) => a.depth - b.depth);
 
     for (const item of visiblePlanets) {
-      const radius = Math.max(2.5, item.body.visualRadius * (Math.min(width, height) * 0.42 / 30.05));
+      const radius = Math.max(2.5, item.body.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * state.zoom);
       drawBody(item.body, item.x, item.y, radius, item.scale);
     }
 
@@ -307,7 +308,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     if (moonProjected) {
       const moonX = centerX + moonProjected.x - pan.x;
       const moonY = centerY + moonProjected.y - pan.y;
-      const moonRadius = Math.max(2, MOON.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * moonProjected.scale);
+      const moonRadius = Math.max(2, MOON.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * moonProjected.scale * state.zoom);
       drawBody(MOON, moonX, moonY, moonRadius, moonProjected.scale);
     }
 
@@ -421,7 +422,31 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     setShowOrbits(enabled) { state.showOrbits = Boolean(enabled); },
     setShowTrails(enabled) { state.showTrails = Boolean(enabled); },
     setShowLabels(enabled) { state.showLabels = Boolean(enabled); },
-    setCenterOn(id) { state.centerOn = id; },
+    setCenterOn(id) {
+      if (state.explorationId) this.enterExplore(id);
+      else state.centerOn = id;
+    },
+    enterExplore(id) {
+      if (!CELESTIAL_BODIES.some((body) => body.id === id)) return false;
+      state.explorationId = id;
+      state.centerOn = id;
+      state.zoom = 1;
+      state.targetZoom = 7;
+      for (const key of Object.keys(trails)) trails[key] = [];
+      onExploreChange?.(id);
+      onZoomChange?.(7);
+      return true;
+    },
+    exitExplore() {
+      if (!state.explorationId) return false;
+      state.explorationId = null;
+      state.centerOn = 'sun';
+      state.zoom = 1;
+      state.targetZoom = 1;
+      onExploreChange?.(null);
+      onZoomChange?.(1);
+      return true;
+    },
     setPerformanceMode(enabled) { state.performanceMode = Boolean(enabled); },
     reset() {
       state.running = true;
@@ -433,6 +458,8 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
       state.targetYaw = -0.12;
       state.targetPitch = -0.08;
       state.centerOn = 'sun';
+      state.explorationId = null;
+      onExploreChange?.(null);
       state.showOrbits = true;
       state.showTrails = false;
       state.showLabels = true;
