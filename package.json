@@ -1,12 +1,15 @@
 {
   "name": "neon-system",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
   },
   "devDependencies": {
     "vite": "^6.3.5"

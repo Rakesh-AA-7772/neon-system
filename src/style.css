@@ -197,3 +197,27 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; touch-action:
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
+
+
+/* Lightweight DOM labels projected over the WebGL scene. */
+.scene-labels {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+.scene-labels[hidden] { display: none; }
+.scene-label {
+  position: absolute;
+  color: #f1f5ff;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.15px;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.8);
+  transform: translate(9px, -50%);
+  pointer-events: none;
+}
+.scene-label[hidden] { display: none; }
