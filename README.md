@@ -8,6 +8,7 @@ A cinematic, interactive Solar System visualizer built with Vite and Three.js.
 - Planetary orbit paths positioned from NASA's published mean Sun distances in AU
 - Eccentric elliptical paths and orbital inclinations for a more realistic layout
 - Average distance labels and a distance reference panel in AU and kilometres
+- Full System and Inner System camera views; both preserve the same linear AU coordinates
 - Atmospheric glow layers for Venus, Earth, Mars, Uranus and Neptune
 - Saturn's rings, Jupiter's Great Red Spot and band accents
 - Slowly drifting background stars and eased camera focus transitions
@@ -22,7 +23,9 @@ A cinematic, interactive Solar System visualizer built with Vite and Three.js.
 ## Scientific scale notes
 
 - Orbit radii are linear in AU, using the planets' published mean Sun distances (approximately their orbital semi-major axes).
+- Full System frames all eight planets. Inner System is a closer camera framing of Mercury through Mars; Jupiter through Neptune remain at their true AU coordinates outside the frame. Neither view changes the underlying orbit distances.
 - The table and planet labels show the real average distance in AU and kilometres.
+- The Sun's broad visual halo is kept close to the Sun so it does not obscure the inner-orbit spacing.
 - Planet visual radii are enlarged so they remain visible. Their diameters are not to scale with the orbit distances.
 - The Moon's displayed separation from Earth is enlarged; its real average Earth distance (384,400 km) is shown in the tooltip and profile.
 - Orbital paths use simplified ellipses. This is an educational visualization, not a real-time ephemeris or a prediction of exact planetary positions.

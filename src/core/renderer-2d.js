@@ -1,5 +1,5 @@
 import { CELESTIAL_BODIES, PLANETS, MOON, formatAU, formatAverageDistance } from '../data/solar-system.js';
-import { auToWorld, clamp, project, rotateX, rotateY, TWO_PI } from './math.js';
+import { MAX_ORBIT_AU, auToWorld, clamp, project, rotateX, rotateY, TWO_PI } from './math.js';
 
 const GLOBAL_SPEED = 0.28;
 const MAX_TRAIL_POINTS = 100;
@@ -25,7 +25,8 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     showTrails: false,
     showLabels: true,
     performanceMode: false,
-    explorationId: null
+    explorationId: null,
+    viewMode: 'full'
   };
 
   const angles = Object.fromEntries(CELESTIAL_BODIES.map((body) => [body.id, Math.random() * TWO_PI]));
@@ -99,10 +100,20 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     return orbitPosition(body, eccentricAnomalyFromMean(angles[id], body.orbitalEccentricity || 0));
   }
 
+  function getViewRangeAU() {
+    if (state.explorationId) return MAX_ORBIT_AU;
+    return state.viewMode === 'inner' ? 2.2 : MAX_ORBIT_AU;
+  }
+
+  function getWorldScale() {
+    return (Math.min(width, height) * 0.42 / getViewRangeAU()) * state.zoom;
+  }
+
   function projectWorldPosition(xAU, yAU) {
+    const viewRangeAU = getViewRangeAU();
     let point = rotateY(
-      auToWorld(xAU, width, height, state.zoom),
-      auToWorld(yAU, width, height, state.zoom),
+      auToWorld(xAU, width, height, state.zoom, viewRangeAU),
+      auToWorld(yAU, width, height, state.zoom, viewRangeAU),
       0,
       state.yaw
     );
@@ -280,8 +291,8 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     if (sunProjected) {
       const sunX = centerX + sunProjected.x - pan.x;
       const sunY = centerY + sunProjected.y - pan.y;
-      const sunRadius = Math.max(3, sun.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * state.zoom);
-      drawSunGlow(sunX, sunY, 80 * (1 + (state.zoom - 1) * 0.4));
+      const sunRadius = Math.max(0.8, sun.visualRadius * getWorldScale());
+      drawSunGlow(sunX, sunY, Math.max(0.8, sunRadius * 0.30));
       drawBody(sun, sunX, sunY, sunRadius, sunProjected.scale);
     }
 
@@ -299,7 +310,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     }).filter(Boolean).sort((a, b) => a.depth - b.depth);
 
     for (const item of visiblePlanets) {
-      const radius = Math.max(2.5, item.body.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * state.zoom);
+      const radius = Math.max(0.35, item.body.visualRadius * getWorldScale() * item.scale);
       drawBody(item.body, item.x, item.y, radius, item.scale);
     }
 
@@ -308,7 +319,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     if (moonProjected) {
       const moonX = centerX + moonProjected.x - pan.x;
       const moonY = centerY + moonProjected.y - pan.y;
-      const moonRadius = Math.max(2, MOON.visualRadius * (Math.min(width, height) * 0.42 / 30.05) * moonProjected.scale * state.zoom);
+      const moonRadius = Math.max(0.3, MOON.visualRadius * getWorldScale() * moonProjected.scale);
       drawBody(MOON, moonX, moonY, moonRadius, moonProjected.scale);
     }
 
@@ -419,6 +430,16 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
     setPaused(paused) { state.running = !paused; },
     setTimeScale(value) { state.timeScale = Number(value); },
     setZoom(value) { state.targetZoom = clamp(Number(value), 0.5, 10); },
+    setViewMode(mode) {
+      if (mode !== 'full' && mode !== 'inner') return false;
+      state.viewMode = mode;
+      if (!state.explorationId) {
+        state.centerOn = 'sun';
+        state.zoom = 1;
+        state.targetZoom = 1;
+      }
+      return true;
+    },
     setShowOrbits(enabled) { state.showOrbits = Boolean(enabled); },
     setShowTrails(enabled) { state.showTrails = Boolean(enabled); },
     setShowLabels(enabled) { state.showLabels = Boolean(enabled); },
@@ -459,6 +480,7 @@ export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoom
       state.targetPitch = -0.08;
       state.centerOn = 'sun';
       state.explorationId = null;
+      state.viewMode = 'full';
       onExploreChange?.(null);
       state.showOrbits = true;
       state.showTrails = false;

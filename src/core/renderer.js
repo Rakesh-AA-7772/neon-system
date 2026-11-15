@@ -115,7 +115,7 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
     running: true, timeScale: 1, zoom: 1, targetZoom: 1,
     yaw: -0.12, pitch: -0.30, targetYaw: -0.12, targetPitch: -0.30,
     centerOn: 'sun', showOrbits: true, showTrails: false,
-    showLabels: true, performanceMode: false, explorationId: null
+    showLabels: true, performanceMode: false, explorationId: null, viewMode: 'full'
   };
 
   const angles = Object.fromEntries(CELESTIAL_BODIES.map((body) => [body.id, Math.random() * TWO_PI]));
@@ -283,7 +283,8 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
     map: glowTexture, color: 0xffd7a6, transparent: true, opacity: 0.60,
     blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, toneMapped: false
   }));
-  sunGlow.scale.set(8.5, 8.5, 1);
+  // Keep the corona close to the Sun instead of washing across the inner orbits.
+  sunGlow.scale.set(0.68, 0.68, 1);
   sunGlow.renderOrder = 3;
   systemRoot.add(sunGlow);
 
@@ -357,6 +358,13 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
   }
   buildStarField(260);
 
+  function getBaseCameraDistance() {
+    const aspect = width / Math.max(1, height);
+    return state.viewMode === 'inner'
+      ? Math.max(8.2, 7.5 / Math.max(0.35, aspect))
+      : Math.max(100, 92 / Math.max(0.35, aspect));
+  }
+
   function resize() {
     if (destroyed) return;
     const rect = host.getBoundingClientRect();
@@ -366,8 +374,8 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
     camera.aspect = aspect;
     camera.updateProjectionMatrix();
 
-    // The outer 30.05 AU orbit fits with margin in landscape and portrait.
-    baseCameraDistance = Math.max(100, 92 / Math.max(0.35, aspect));
+    // Full System fits 30.05 AU; Inner System frames the Mercury–Mars region.
+    baseCameraDistance = getBaseCameraDistance();
     targetCameraDistance = state.explorationId
       ? getExplorationCameraDistance(state.explorationId)
       : baseCameraDistance * (state.centerOn === 'sun' ? 1 : FOCUS_CAMERA_FACTOR);
@@ -660,6 +668,20 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
     setPaused(paused) { state.running = !paused; },
     setTimeScale(value) { state.timeScale = clamp(Number(value), 0, 8); },
     setZoom(value) { state.targetZoom = clamp(Number(value), 0.5, 10); },
+    setViewMode(mode) {
+      if (mode !== 'full' && mode !== 'inner') return false;
+      state.viewMode = mode;
+      baseCameraDistance = getBaseCameraDistance();
+      if (!state.explorationId) {
+        state.centerOn = 'sun';
+        state.zoom = 1;
+        state.targetZoom = 1;
+        targetCameraDistance = baseCameraDistance;
+        clearTrails();
+        onZoomChange?.(1);
+      }
+      return true;
+    },
     setShowOrbits(enabled) {
       state.showOrbits = Boolean(enabled);
       for (const line of orbitLines) line.visible = state.showOrbits && !state.explorationId;
@@ -726,6 +748,8 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
       state.targetPitch = -0.30;
       state.centerOn = 'sun';
       state.explorationId = null;
+      state.viewMode = 'full';
+      baseCameraDistance = getBaseCameraDistance();
       onExploreChange?.(null);
       state.showOrbits = true;
       state.showTrails = false;

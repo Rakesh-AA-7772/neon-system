@@ -1,11 +1,12 @@
 export const TWO_PI = Math.PI * 2;
 export const MAX_ORBIT_AU = 30.05;
 
-export function auToWorld(au, width, height, zoom) {
-  // Linear AU mapping: Neptune's average orbit defines the outer edge.
+export function auToWorld(au, width, height, zoom, maxAU = MAX_ORBIT_AU) {
+  // Linear AU mapping. maxAU changes only the camera window, never the AU values.
   // Planet radii are enlarged separately for visibility.
   const base = Math.min(width, height) * 0.42;
-  return (Number(au) / MAX_ORBIT_AU) * base * zoom;
+  const range = Number.isFinite(maxAU) && maxAU > 0 ? maxAU : MAX_ORBIT_AU;
+  return (Number(au) / range) * base * zoom;
 }
 
 export function rotateY(x, y, z, angle) {

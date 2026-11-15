@@ -37,6 +37,15 @@
             <input id="zoom" type="range" min="0.5" max="10" step="0.01" value="1" />
           </div>
 
+          <div class="range-control view-mode-control">
+            <div class="range-heading"><span>Orbit view</span><output>Linear AU</output></div>
+            <div class="button-row">
+              <button id="fullSystemView" class="button button-primary" type="button" aria-pressed="true">Full System</button>
+              <button id="innerSystemView" class="button button-secondary" type="button" aria-pressed="false">Inner System</button>
+            </div>
+            <p class="helper-text">Both views keep the same linear AU distances. Inner System zooms into Mercury–Mars; the outer planets are outside the frame.</p>
+          </div>
+
           <div class="switch-grid">
             <label class="switch-row" for="showOrbits"><input id="showOrbits" type="checkbox" checked /><span>Show orbits</span></label>
             <label class="switch-row" for="showTrails"><input id="showTrails" type="checkbox" /><span>Show trails</span></label>
@@ -86,7 +95,7 @@
               <div class="distance-row"><span>Uranus <small>19.20 AU</small></span><strong>2.872B km</strong></div>
               <div class="distance-row"><span>Neptune <small>30.05 AU</small></span><strong>4.495B km</strong></div>
             </div>
-            <p class="distance-footnote">Orbit spacing is linear in AU. Planet sizes and the Moon's displayed separation are enlarged for visibility.</p>
+            <p class="distance-footnote">Both camera views preserve linear AU spacing. Planet sizes and the Moon's displayed separation are enlarged for visibility.</p>
           </details>
         </section>
 

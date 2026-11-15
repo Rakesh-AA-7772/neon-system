@@ -16,6 +16,8 @@ export function bindControls(renderer, { onZoomChange, onExplore } = {}) {
   const resetButton = $('resetBtn');
   const saveButton = $('saveBtn');
   const exploreButton = $('exploreFocusBtn');
+  const fullSystemView = $('fullSystemView');
+  const innerSystemView = $('innerSystemView');
 
   const syncZoom = (value) => {
     zoom.value = String(value);
@@ -57,6 +59,23 @@ export function bindControls(renderer, { onZoomChange, onExplore } = {}) {
   const onCenterChange = () => renderer.setCenterOn(centerOn.value);
   const onExploreSelected = () => onExplore?.(centerOn.value);
   const onPerformanceChange = () => renderer.setPerformanceMode(performanceMode.checked);
+  const syncViewMode = (mode) => {
+    const fullSelected = mode === 'full';
+    fullSystemView.setAttribute('aria-pressed', String(fullSelected));
+    innerSystemView.setAttribute('aria-pressed', String(!fullSelected));
+    fullSystemView.classList.toggle('button-primary', fullSelected);
+    fullSystemView.classList.toggle('button-secondary', !fullSelected);
+    innerSystemView.classList.toggle('button-primary', !fullSelected);
+    innerSystemView.classList.toggle('button-secondary', fullSelected);
+  };
+  const onFullSystemView = () => {
+    renderer.setViewMode?.('full');
+    syncViewMode('full');
+  };
+  const onInnerSystemView = () => {
+    renderer.setViewMode?.('inner');
+    syncViewMode('inner');
+  };
 
   const onReset = () => {
     renderer.reset();
@@ -70,6 +89,7 @@ export function bindControls(renderer, { onZoomChange, onExplore } = {}) {
     showLabels.checked = true;
     centerOn.value = 'sun';
     performanceMode.checked = false;
+    syncViewMode('full');
     syncZoom(1);
   };
 
@@ -100,6 +120,8 @@ export function bindControls(renderer, { onZoomChange, onExplore } = {}) {
   resetButton.addEventListener('click', onReset);
   saveButton.addEventListener('click', () => renderer.saveImage());
   exploreButton.addEventListener('click', onExploreSelected);
+  fullSystemView.addEventListener('click', onFullSystemView);
+  innerSystemView.addEventListener('click', onInnerSystemView);
   window.addEventListener('keydown', onKeyDown);
   applyResponsiveSidebar();
   onTimeScaleInput();
@@ -120,6 +142,8 @@ export function bindControls(renderer, { onZoomChange, onExplore } = {}) {
       performanceMode.removeEventListener('change', onPerformanceChange);
       resetButton.removeEventListener('click', onReset);
       exploreButton.removeEventListener('click', onExploreSelected);
+      fullSystemView.removeEventListener('click', onFullSystemView);
+      innerSystemView.removeEventListener('click', onInnerSystemView);
       window.removeEventListener('keydown', onKeyDown);
     }
   };

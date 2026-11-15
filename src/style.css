@@ -89,6 +89,9 @@ select:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible
 .button-primary { background: linear-gradient(105deg, #695ff3, #277fcb); box-shadow: 0 5px 16px rgba(79, 100, 236, 0.22); }
 .button-secondary { background: rgba(255,255,255,0.035); border-color: rgba(166,184,255,0.17); }
 .button-row .button { flex: 1; }
+.view-mode-control { margin-top: 8px; }
+.view-mode-control .button-row { margin-top: 0; }
+.view-mode-control .range-heading output { color: #7ddff0; font-size: 9px; }
 .audio-panel { margin-top: 0; }
 .audio-select { width: 100%; max-width: none; }
 .audio-buttons { margin-top: 10px; }
