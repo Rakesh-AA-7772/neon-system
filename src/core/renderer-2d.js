@@ -7,7 +7,7 @@ const FOCAL_LENGTH = 1000;
 const CAMERA_Z = 2000;
 
 /** Canvas renderer for the cinematic (intentionally non-scale) Solar System. */
-export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomChange }) {
+export function createCanvasFallbackRenderer({ canvas, tooltip, onSelect, onZoomChange }) {
   const context = canvas.getContext('2d', { alpha: true });
   if (!context) throw new Error('This browser does not support the Canvas 2D renderer.');
 

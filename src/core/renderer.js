@@ -125,7 +125,7 @@ export function createSolarSystemRenderer({ canvas, tooltip, onSelect, onZoomCha
   scene.add(ambientLight);
   const sunlight = new THREE.PointLight(0xffd8aa, 30, 0, 2);
   sunlight.position.set(0, 0, 0);
-  scene.add(sunlight);
+  systemRoot.add(sunlight);
   const fillLight = new THREE.DirectionalLight(0x9abaff, 0.28);
   fillLight.position.set(-18, 22, 30);
   scene.add(fillLight);
